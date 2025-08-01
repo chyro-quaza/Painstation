@@ -1,35 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>PainStation - Login to Suffer</title>
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyberpunk Tic-Tac-Toe (Cheating AI)</title>
+    <style>
+        body {
+            background: #0a0a1a;
+            color: #0ff;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            overflow: hidden;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-shadow: 0 0 10px #0ff;
+            font-size: 2.5em;
+        }
+        
+        #board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 10px;
+            margin: 30px auto;
+            width: 320px;
+        }
+        
+        .cell {
+            width: 100px;
+            height: 100px;
+            background: rgba(0, 20, 40, 0.7);
+            border: 2px solid #0ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .cell:hover {
+            background: rgba(0, 255, 255, 0.1);
+            box-shadow: 0 0 15px #0ff;
+        }
+        
+        .cell.x {
+            color: #f0f;
+            text-shadow: 0 0 10px #f0f;
+        }
+        
+        .cell.o {
+            color: #0ff;
+            text-shadow: 0 0 10px #0ff;
+        }
+        
+        #status {
+            margin: 20px;
+            font-size: 1.5em;
+            text-shadow: 0 0 5px #0ff;
+        }
+        
+        button {
+            background: #0a0a1a;
+            color: #0ff;
+            border: 2px solid #0ff;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #0ff;
+            color: #0a0a1a;
+            box-shadow: 0 0 15px #0ff;
+        }
+        
+        .glitch {
+            animation: glitch 1s infinite;
+        }
+        
+        @keyframes glitch {
+            0% { text-shadow: 0 0 5px #0ff; }
+            25% { text-shadow: -5px 0 5px #f0f; }
+            50% { text-shadow: 5px 0 5px #0f0; }
+            75% { text-shadow: 0 -5px 5px #ff0; }
+            100% { text-shadow: 0 5px 5px #0ff; }
+        }
+    </style>
 </head>
 <body>
-
-  <h1>Welcome to PainStation™</h1>
-
-  <!-- Login -->
-  <h2>Login</h2>
-  <input type="email" id="loginEmail" placeholder="Email" />
-  <input type="password" id="loginPassword" placeholder="Password" />
-  <button onclick="login()">Enter the Torture Chamber</button>
-
-  <!-- Register -->
-  <h2>Register</h2>
-  <input type="email" id="registerEmail" placeholder="Email" />
-  <input type="password" id="registerPassword" placeholder="Password" />
-  <button onclick="register()">Create Pain Account</button>
-
-  <!-- Pain Score -->
-  <h2>Simulate Pain Score</h2>
-  <input type="number" id="scoreInput" placeholder="Pain Score" />
-  <input type="number" id="failInput" placeholder="Failures" />
-  <button onclick="savePainData()">Record Suffering</button>
-
-  <p id="status"></p>
-
-  <!-- Scripts -->
-  <script src="script.js"></script>
+    <h1>CYBERPUNK TIC-TAC-TOE</h1>
+    <div id="status">YOUR MOVE, RUNNER</div>
+    <div id="board"></div>
+    <button id="reset">RESET MATRIX</button>
+    
+    <script src="game.js"></script>
 </body>
 </html>
