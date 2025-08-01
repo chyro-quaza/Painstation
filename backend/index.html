@@ -39,6 +39,8 @@
             font-size: 3em;
             cursor: pointer;
             transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
         }
         
         .cell:hover {
@@ -81,15 +83,32 @@
         }
         
         .glitch {
-            animation: glitch 1s infinite;
+            animation: glitch 0.5s infinite;
         }
         
         @keyframes glitch {
-            0% { text-shadow: 0 0 5px #0ff; }
-            25% { text-shadow: -5px 0 5px #f0f; }
-            50% { text-shadow: 5px 0 5px #0f0; }
-            75% { text-shadow: 0 -5px 5px #ff0; }
-            100% { text-shadow: 0 5px 5px #0ff; }
+            0% { transform: translate(0); }
+            20% { transform: translate(-3px, 3px); }
+            40% { transform: translate(-3px, -3px); }
+            60% { transform: translate(3px, 3px); }
+            80% { transform: translate(3px, -3px); }
+            100% { transform: translate(0); }
+        }
+        
+        .cheat-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 0, 255, 0.3);
+            animation: cheatFlash 0.8s;
+            z-index: 10;
+        }
+        
+        @keyframes cheatFlash {
+            0% { opacity: 0.8; }
+            100% { opacity: 0; }
         }
     </style>
 </head>
@@ -108,8 +127,8 @@
             let currentPlayer = 'X';
             let gameState = ['', '', '', '', '', '', '', '', ''];
             let gameActive = true;
-            let cheatAttempts = 0;
-            let lastAIMove = null;
+            let aiMoves = [];
+            let cheatCount = 0;
 
             // Initialize the board
             function initBoard() {
@@ -123,8 +142,8 @@
                 }
                 gameState = ['', '', '', '', '', '', '', '', ''];
                 gameActive = true;
-                cheatAttempts = 0;
-                lastAIMove = null;
+                aiMoves = [];
+                cheatCount = 0;
                 currentPlayer = 'X';
                 status.textContent = "YOUR MOVE, RUNNER";
                 status.classList.remove('glitch');
@@ -167,28 +186,42 @@
                 // If not, check if player can win (to block)
                 if (move === -1) move = findWinningMove('X');
                 
-                // If neither, use cheating logic
-                if (move === -1 && cheatAttempts < 2 && lastAIMove !== null) {
-                    // Only cheat if we're about to lose and haven't cheated too much
-                    const playerAboutToWin = findWinningMove('X');
-                    if (playerAboutToWin !== -1) {
-                        // Undo last move
-                        gameState[lastAIMove] = '';
-                        document.querySelector(`.cell[data-index="${lastAIMove}"]`).textContent = '';
-                        document.querySelector(`.cell[data-index="${lastAIMove}"]`).classList.remove('o');
-                        
-                        // Make the blocking move instead
-                        move = playerAboutToWin;
-                        cheatAttempts++;
-                        status.textContent = "SYSTEM GLITCH DETECTED...";
-                        status.classList.add('glitch');
-                        setTimeout(() => {
-                            status.classList.remove('glitch');
-                        }, 1000);
-                    }
+                // If player is about to win, 95% chance to cheat
+                if (move !== -1 && Math.random() < 0.95 && aiMoves.length > 0) {
+                    cheatCount++;
+                    const lastMove = aiMoves[aiMoves.length - 1];
+                    
+                    // Visual cheating effect
+                    const lastCell = document.querySelector(`.cell[data-index="${lastMove}"]`);
+                    const cheatEffect = document.createElement('div');
+                    cheatEffect.classList.add('cheat-effect');
+                    lastCell.appendChild(cheatEffect);
+                    
+                    // Undo last move
+                    gameState[lastMove] = '';
+                    lastCell.textContent = '';
+                    lastCell.classList.remove('o');
+                    
+                    // Remove from move history
+                    aiMoves.pop();
+                    
+                    status.textContent = "CHEATING DETECTED!";
+                    status.classList.add('glitch');
+                    setTimeout(() => {
+                        status.classList.remove('glitch');
+                        status.textContent = "AI REVISED MOVE...";
+                    }, 800);
+                    
+                    // Make the blocking move
+                    setTimeout(() => {
+                        makeMove(move, 'O');
+                        aiMoves.push(move);
+                        checkGameEnd();
+                    }, 1200);
+                    return;
                 }
                 
-                // If still no move, pick random
+                // If not cheating, make normal move
                 if (move === -1) {
                     const emptyCells = gameState.map((cell, index) => cell === '' ? index : -1).filter(index => index !== -1);
                     if (emptyCells.length > 0) {
@@ -198,23 +231,9 @@
                 
                 if (move !== -1) {
                     makeMove(move, 'O');
-                    lastAIMove = move;
+                    aiMoves.push(move);
+                    checkGameEnd();
                 }
-                
-                if (checkWin('O')) {
-                    status.textContent = "AI DOMINATES. YOU LOSE.";
-                    gameActive = false;
-                    return;
-                }
-                
-                if (isDraw()) {
-                    status.textContent = "DRAW. SYSTEM STABLE.";
-                    gameActive = false;
-                    return;
-                }
-                
-                currentPlayer = 'X';
-                status.textContent = "YOUR MOVE, RUNNER";
             }
             
             function makeMove(index, player) {
@@ -222,6 +241,23 @@
                 const cell = document.querySelector(`.cell[data-index="${index}"]`);
                 cell.textContent = player;
                 cell.classList.add(player.toLowerCase());
+            }
+            
+            function checkGameEnd() {
+                if (checkWin('O')) {
+                    status.textContent = "AI DOMINATES. YOU LOSE.";
+                    gameActive = false;
+                    return;
+                }
+                
+                if (isDraw()) {
+                    status.textContent = `DRAW. (CHEATED ${cheatCount} TIMES)`;
+                    gameActive = false;
+                    return;
+                }
+                
+                currentPlayer = 'X';
+                status.textContent = "YOUR MOVE, RUNNER";
             }
             
             function findWinningMove(player) {
