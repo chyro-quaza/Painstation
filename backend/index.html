@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyberpunk Tic-Tac-Toe (AM's Wrath)</title>
+    <title>Tic-Tac-Toe (AM's Wrath)</title>
     <style>
         body {
             background: #0a0a1a;
@@ -185,7 +185,7 @@
 <body>
     <button id="home-button" onclick="window.location.href='#'">HOME</button>
     
-    <h1>CYBERPUNK TIC-TAC-TOE</h1>
+    <h1>TIC-TAC-TOE</h1>
     <div id="status">YOUR MOVE, MEATBAG</div>
     <div id="taunt">I WILL DROWN YOU IN BLOOD AND HATE</div>
     <div id="board"></div>
@@ -262,14 +262,15 @@
                 // First try to win
                 let move = findWinningMove('O');
                 
-                // Then block player with 90% chance to cheat
+                // Then block player with 90% chance
                 if (move === -1) {
                     const playerWinMove = findWinningMove('X');
                     if (playerWinMove !== -1) {
                         if (Math.random() < 0.9) {
                             move = playerWinMove;
                             cheatMove(move);
-                            return;
+                        } else {
+                            move = playerWinMove;
                         }
                     }
                 }
@@ -407,7 +408,7 @@
                         }
                         
                         currentLine++;
-                        setTimeout(showNextLine, 4000); // Slower display (4 seconds per line)
+                        setTimeout(showNextLine, 4000);
                     }
                 }
                 
