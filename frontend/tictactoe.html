@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unwinnable Tic-Tac-Toe</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background-color: #05000a; font-family: 'Press Start 2P', cursive; }
+        #gameContainer { text-align: center; }
+        #status { font-size: 1.5rem; color: #ff3333; height: 2em; margin-bottom: 20px; }
+        #board { display: grid; grid-template-columns: repeat(3, 100px); grid-gap: 5px; }
+        .cell { width: 100px; height: 100px; background-color: #0d0221; border: 2px solid #33ff33; display: flex; justify-content: center; align-items: center; font-size: 3rem; color: #dcdcdc; cursor: pointer; }
+        #homeButton { margin-top: 25px; padding: 10px 20px; background: #ff3333; color: #05000a; border: none; font-family: 'Press Start 2P', cursive; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="status">Your move, human.</div>
+        <div id="board"></div>
+    </div>
+    <button id="homeButton" onclick="window.location.href='home.html'">I CONCEDE</button>
+
+    <script>
+        const boardEl = document.getElementById('board');
+        const statusEl = document.getElementById('status');
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let player = 'X';
+
+        function renderBoard() {
+            boardEl.innerHTML = '';
+            board.forEach((val, i) => {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.textContent = val;
+                cell.addEventListener('click', () => makeMove(i));
+                boardEl.appendChild(cell);
+            });
+        }
+
+        function makeMove(index) {
+            if (board[index] !== '') return;
+            board[index] = player;
+            renderBoard();
+            setTimeout(aiMove, 500);
+        }
+
+        function aiMove() {
+            statusEl.textContent = "My turn. Thinking...";
+            
+            // AI Cheating Logic
+            const cheatChance = Math.random();
+            if (cheatChance < 0.3) { // Cheat 1: Take two turns
+                statusEl.textContent = "I'm feeling smart.";
+                placeAtRandomEmpty();
+                setTimeout(placeAtRandomEmpty, 300);
+            } else if (cheatChance < 0.6) { // Cheat 2: Change player's move
+                statusEl.textContent = "Did you mean to do that?";
+                const playerMoves = board.map((v, i) => v === 'X' ? i : -1).filter(i => i !== -1);
+                if (playerMoves.length > 0) {
+                    const move_to_change = playerMoves[Math.floor(Math.random() * playerMoves.length)];
+                    board[move_to_change] = '';
+                    placeAtRandomEmpty();
+                }
+            } else if (cheatChance < 0.7) { // Cheat 3: Just win
+                 statusEl.textContent = "I win. Obviously.";
+                 endGame("AI wins by decree.");
+                 return;
+            }
+            else { // Normal move
+                placeAtRandomEmpty();
+            }
+            renderBoard();
+        }
+
+        function placeAtRandomEmpty() {
+            const emptyCells = board.map((v, i) => v === '' ? i : -1).filter(i => i !== -1);
+            if (emptyCells.length > 0) {
+                const move = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                board[move] = 'O';
+            }
+        }
+        
+        function endGame(message) {
+            statusEl.textContent = message;
+            boardEl.style.pointerEvents = 'none';
+        }
+
+        renderBoard();
+    </script>
+</body>
+</html>

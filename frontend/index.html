@@ -1,13 +1,312 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAINSTATION - Your personal hell</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff2a6d;
+            --secondary: #05d9e8;
+            --dark: #0d0221;
+            --darker: #01012b;
+            --text: #d1f7ff;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--dark);
+            color: var(--text);
+            font-family: 'Rajdhani', sans-serif;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(255,42,109,0.15) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(5,217,232,0.15) 0%, transparent 50%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 4.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5rem;
+            margin: 0;
+            text-shadow: 0 0 15px var(--primary), 0 0 30px rgba(255,42,109,0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+            position: relative;
+            display: inline-block;
+        }
+
+        .title::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px var(--primary), 0 0 20px rgba(255,42,109,0.5);
+            }
+            to {
+                text-shadow: 0 0 20px var(--primary), 0 0 40px rgba(255,42,109,0.8), 0 0 60px rgba(255,42,109,0.3);
+            }
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .feature-card {
+            background: linear-gradient(145deg, rgba(13,2,33,0.8) 0%, rgba(1,1,43,0.9) 100%);
+            border: 1px solid rgba(255,42,109,0.3);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+            border-color: rgba(255,42,109,0.6);
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 65%, rgba(255,42,109,0.1) 100%);
+            pointer-events: none;
+        }
+
+        .feature-title {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--secondary);
+            font-size: 1.8rem;
+            margin-top: 0;
+            margin-bottom: 1rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        .feature-title::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 50%;
+            height: 2px;
+            background: var(--secondary);
+            box-shadow: 0 0 5px var(--secondary);
+        }
+
+        .feature-desc {
+            line-height: 1.6;
+            font-size: 1.1rem;
+        }
+
+        .signup-section {
+            background: linear-gradient(145deg, rgba(13,2,33,0.9) 0%, rgba(5,1,43,0.95) 100%);
+            border: 1px solid rgba(5,217,232,0.3);
+            border-radius: 8px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .signup-title {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--secondary);
+            font-size: 2rem;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px var(--secondary);
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(1,1,43,0.7);
+            border: 1px solid rgba(5,217,232,0.3);
+            border-radius: 4px;
+            color: var(--text);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(255,42,109,0.3);
+        }
+
+        .signup-btn {
+            background: linear-gradient(90deg, var(--primary) 0%, #ff5e9a 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(255,42,109,0.4);
+            margin-top: 1rem;
+        }
+
+        .signup-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255,42,109,0.6);
+        }
+
+        .beta-banner {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: linear-gradient(90deg, var(--secondary) 0%, #00f7ff 100%);
+            color: var(--dark);
+            padding: 12px 25px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(5,217,232,0.4);
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .beta-banner:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(5,217,232,0.6);
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .title {
+                font-size: 3rem;
+                letter-spacing: 0.3rem;
+            }
+        }
+        // Add to your CSS:
+
+        @keyframes painGlitch {
+    
+          0% { filter: hue-rotate(0deg) blur(0); }
+         20% { filter: hue-rotate(30deg) blur(1px); }
+         40% { filter: hue-rotate(-20deg) blur(2px); }
+         60% { filter: hue-rotate(10deg) blur(1px); }
+         100% { filter: hue-rotate(0deg) blur(0); }
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">PAINSTATION</h1>
+        </header>
+        
+        <div class="content-grid">
+            <div class="feature-card">
+                <h2 class="feature-title">NEW TORTURE METHODS</h2>
+                <p class="feature-desc">Experience our latest pain-inducing gameplay mechanics designed to maximize frustration and controller throwing rage. Our advanced algorithms ensure you'll never have a moment of peace.</p>
+            </div>
+            
+            <div class="feature-card">
+                <h2 class="feature-title">UNFAIR ADVANTAGE</h2>
+                <p class="feature-desc">Our AI opponents now cheat more efficiently than ever before, with perfect reflexes and psychic prediction abilities. They learn from your mistakes faster than you can make them.</p>
+            </div>
+        </div>
+        
+        <div class="signup-section">
+            <h2 class="signup-title">JOIN THE SUFFERING</h2>
+            
+            <div class="input-group">
+                <label for="username">USERNAME</label>
+                <input type="text" id="username" placeholder="Enter your doom...">
+            </div>
+            
+            <div class="input-group">
+                <label for="password">PASSWORD</label>
+                <input type="password" id="password" placeholder="Make it secure... or not">
+            </div>
+            
+            <div class="input-group">
+                <label for="email">EMAIL (WE'LL SPAM YOU)</label>
+                <input type="email" id="email" placeholder="Your@pain.hell">
+            </div>
+            
+            <button class="signup-btn">SIGN UP FOR PAIN</button>
+        </div>
+        <script>
+document.querySelector('.signup-btn').addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    // Add pain effects before redirect
+    document.body.style.animation = 'painGlitch 0.5s';
+    document.querySelector('.container').style.opacity = '0';
+    
+    setTimeout(() => {
+        window.location.href = 'captcha.html';
+    }, 800); // Match duration with animation
+});
+
+
+</script>
+        
+        <div class="beta-banner">JOIN BETA TESTING →</div>
+    </div>
+</body>
 </html>

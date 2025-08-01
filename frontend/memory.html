@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Leak Sim</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background-color: #05000a; font-family: 'Press Start 2P', cursive; }
+        #gameContainer { text-align: center; }
+        #status { font-size: 1.2rem; color: #ff3333; height: 2em; margin-bottom: 20px; }
+        #grid { display: grid; grid-template-columns: repeat(4, 80px); grid-gap: 10px; }
+        .card { width: 80px; height: 100px; background-color: #33ff33; border: 2px solid #0d0221; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 2.5rem; color: #05000a; transform-style: preserve-3d; transition: transform 0.5s; }
+        .card.flipped { transform: rotateY(180deg); background-color: #0d0221; }
+        .card .front, .card .back { position: absolute; backface-visibility: hidden; }
+        .card .back { transform: rotateY(180deg); }
+        #homeButton { margin-top: 25px; padding: 10px 20px; background: #ff3333; color: #05000a; border: none; font-family: 'Press Start 2P', cursive; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="status">Match the pairs. If you can.</div>
+        <div id="grid"></div>
+    </div>
+    <button id="homeButton" onclick="window.location.href='home.html'">MY MEMORY IS FAILING</button>
+
+    <script>
+        const grid = document.getElementById('grid');
+        const statusEl = document.getElementById('status');
+        let cards = ['A', 'A', 'B', 'B', 'C', 'C', 'D', 'D', 'E', 'E', 'F', 'F', 'G', 'G'];
+        let flippedCards = [];
+        let matchedPairs = 0;
+
+        function shuffle(array) {
+            array.sort(() => Math.random() - 0.5);
+        }
+
+        function createBoard() {
+            shuffle(cards);
+            grid.innerHTML = '';
+            cards.forEach((symbol, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.dataset.symbol = symbol;
+                card.innerHTML = `<div class="front">?</div><div class="back">${symbol}</div>`;
+                card.addEventListener('click', () => flipCard(card));
+                grid.appendChild(card);
+            });
+        }
+
+        function flipCard(card) {
+            if (flippedCards.length < 2 && !card.classList.contains('flipped')) {
+                card.classList.add('flipped');
+                flippedCards.push(card);
+                if (flippedCards.length === 2) {
+                    setTimeout(checkMatch, 1000);
+                }
+            }
+        }
+
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            if (card1.dataset.symbol === card2.dataset.symbol) {
+                matchedPairs++;
+                if (matchedPairs === 6) { // Just before winning
+                    statusEl.textContent = "Almost there... almost...";
+                    setTimeout(crashGame, 1500);
+                }
+            } else {
+                card1.classList.remove('flipped');
+                card2.classList.remove('flipped');
+            }
+            flippedCards = [];
+            
+            // Unfair part: randomly shuffle non-matched cards
+            if (Math.random() < 0.25 && matchedPairs < 5) {
+                statusEl.textContent = "Memory corrupted. Reshuffling...";
+                setTimeout(() => {
+                    // This is a simplified "cheating" shuffle
+                    createBoard(); 
+                    statusEl.textContent = "Try again.";
+                }, 1000);
+            }
+        }
+        
+        function crashGame() {
+            document.body.innerHTML = `<div style="text-align:center; color: #ff3333;">
+                <h1 style="font-size: 2rem;">FATAL_ERROR: memory_leak.exe</h1>
+                <p>The application has performed an illegal operation and will be terminated.</p>
+                <p>You were so close. How tragic.</p>
+                <button id="homeButton" onclick="window.location.href='home.html'">REBOOT MISERY</button>
+            </div>`;
+        }
+
+        createBoard();
+    </script>
+</body>
+</html>

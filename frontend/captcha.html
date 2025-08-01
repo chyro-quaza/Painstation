@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAINSTATION - AUTHENTICATION</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --red: #ff2a6d;
+            --blue: #05d9e8;
+            --dark: #0d0221;
+            --text: #d1f7ff;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--dark);
+            color: var(--text);
+            font-family: 'Press Start 2P', cursive;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(255,42,109,0.1) 0%, transparent 25%),
+                radial-gradient(circle at 80% 70%, rgba(5,217,232,0.1) 0%, transparent 25%);
+        }
+
+        .captcha-container {
+            background: rgba(5,1,43,0.95);
+            border: 3px solid var(--red);
+            border-radius: 10px;
+            padding: 3rem;
+            box-shadow: 
+                0 0 15px var(--red),
+                0 0 30px rgba(255,42,109,0.3),
+                inset 0 0 15px rgba(255,42,109,0.2);
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            position: relative;
+        }
+
+        .captcha-title {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--red);
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            text-shadow: 
+                0 0 10px var(--red),
+                0 0 20px rgba(255,42,109,0.5);
+            animation: glitch 3s infinite alternate;
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-3px, 3px); }
+            40% { transform: translate(-3px, -3px); }
+            60% { transform: translate(3px, 3px); }
+            80% { transform: translate(3px, -3px); }
+            100% { transform: translate(0); }
+        }
+
+        .captcha-box {
+            background: rgba(1,1,43,0.7);
+            border: 2px dashed var(--blue);
+            padding: 2rem;
+            border-radius: 5px;
+            margin-bottom: 2rem;
+            position: relative;
+            min-height: 200px;
+            overflow: hidden;
+        }
+
+        .checkbox-container {
+            position: absolute;
+            transition: all 0.1s;
+            z-index: 10;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            font-size: 1.2rem;
+            color: var(--text);
+            cursor: pointer;
+            padding: 15px 20px;
+            background: rgba(255,42,109,0.15);
+            border-radius: 5px;
+            border: 2px solid var(--red);
+            white-space: nowrap;
+        }
+
+        .checkbox-label input {
+            margin-right: 12px;
+            cursor: pointer;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--blue);
+            border-radius: 3px;
+            position: relative;
+        }
+
+        .checkbox-label input:checked::after {
+            content: '✓';
+            position: absolute;
+            color: var(--blue);
+            font-size: 16px;
+            left: 1px;
+            top: -3px;
+        }
+
+        .troll-message {
+            position: absolute;
+            font-family: 'Press Start 2P', cursive;
+            color: var(--red);
+            font-size: 1.5rem;
+            text-shadow: 0 0 8px var(--red);
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.3s;
+            width: 100%;
+            text-align: center;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .troll-message.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .submit-btn {
+            background: linear-gradient(90deg, var(--red) 0%, #ff5e9a 100%);
+            color: white;
+            border: none;
+            padding: 18px 36px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .submit-btn.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .pain-counter {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 0.8rem;
+            color: var(--blue);
+            opacity: 0.7;
+        }
+        
+        .access-denied {
+            text-align: center;
+            color: var(--red);
+            animation: fadeIn 1s;
+        }
+        .access-denied h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            text-shadow: 0 0 15px var(--red);
+        }
+        .access-denied p {
+            font-size: 1rem;
+            color: var(--text);
+            line-height: 1.5;
+        }
+        .access-denied button {
+            background: linear-gradient(90deg, var(--red) 0%, #ff5e9a 100%);
+            color: white;
+            border: none;
+            padding: 18px 36px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 2rem;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="captcha-container" id="mainContainer">
+        <h1 class="captcha-title">PAINSTATION</h1>
+        <p style="color: var(--blue); margin-bottom: 2rem;">AUTHENTICATION REQUIRED</p>
+        
+        <div class="captcha-box" id="captchaBox">
+            <div class="checkbox-container" id="checkboxContainer">
+                <label class="checkbox-label" id="checkboxLabel">
+                    <input type="checkbox" id="painCheckbox"> I AM A ROBOT
+                </label>
+            </div>
+            <div class="troll-message" id="trollMessage"></div>
+        </div>
+        
+        <button class="submit-btn" id="submitBtn">VERIFY IDENTITY</button>
+        <div class="pain-counter" id="painCounter">PAIN LEVEL: 0</div>
+    </div>
+
+    <script>
+        const checkbox = document.getElementById('painCheckbox');
+        const checkboxLabel = document.getElementById('checkboxLabel');
+        const checkboxContainer = document.getElementById('checkboxContainer');
+        const trollMessage = document.getElementById('trollMessage');
+        const captchaBox = document.getElementById('captchaBox');
+        const submitBtn = document.getElementById('submitBtn');
+        const painCounter = document.getElementById('painCounter');
+        const mainContainer = document.getElementById('mainContainer');
+        
+        const trollMessages = ["NICE TRY!", "TOO SLOW!", "ERROR: SKILL NOT FOUND", "HAHAHA!", "GIVE UP ALREADY!"];
+        let painLevel = 0;
+        let successfulAttempts = 0;
+        const requiredAttempts = 5;
+        
+        moveCheckbox();
+        
+        const moveInterval = setInterval(() => {
+            if(!checkbox.checked) moveCheckbox();
+        }, 1800);
+        
+        checkboxContainer.addEventListener('mouseenter', () => {
+            if(!checkbox.checked) {
+                moveCheckbox();
+                showTrollMessage();
+                increasePain();
+            }
+        });
+        
+        checkbox.addEventListener('click', (e) => {
+            e.preventDefault(); // Prevent default checking
+            if(checkboxContainer.style.transition !== 'none') {
+                successfulAttempts++;
+                painLevel += 10;
+                updatePainCounter();
+                
+                if(successfulAttempts >= requiredAttempts) {
+                    checkbox.checked = true;
+                    submitBtn.classList.add('active');
+                    showTrollMessage("FINE... YOU WIN THIS TIME", true);
+                    clearInterval(moveInterval);
+                    checkboxContainer.style.animation = 'none';
+                } else {
+                    showTrollMessage(`${requiredAttempts - successfulAttempts} MORE TO GO!`);
+                    setTimeout(() => moveCheckbox(), 100);
+                }
+            }
+        });
+        
+        submitBtn.addEventListener('click', () => {
+            if (!submitBtn.classList.contains('active')) return;
+
+            submitBtn.textContent = "VERIFYING...";
+            submitBtn.disabled = true;
+            submitBtn.style.animation = "glitch 0.5s infinite";
+            
+            setTimeout(() => {
+                const chance = Math.floor(Math.random() * 6); // Gives a number between 0 and 5
+                
+                if (chance === 0) { // This is a 1 in 6 chance
+                    submitBtn.textContent = "ACCESS GRANTED";
+                    submitBtn.style.background = 'var(--blue)';
+                    
+                    // Redirect to the main Misery OS home page
+                    setTimeout(() => {
+                        window.location.href = "home.html";
+                    }, 1500);
+                } else {
+                    // Failure! Show an access denied message.
+                    document.body.innerHTML = `<div class="captcha-container access-denied">
+                                                  <h1>ACCESS DENIED</h1>
+                                                  <p>> AUTHENTICATION FAILED. SYSTEM INTEGRITY COMPROMISED.</p>
+                                                  <p>> ERROR CODE: 734-HUMANITY-NOT-MISERABLE-ENOUGH</p>
+                                                  <button onclick="location.reload()">RE-ATTEMPT AUTHENTICATION</button>
+                                               </div>`;
+                }
+            }, 3000);
+        });
+        
+        function moveCheckbox() {
+            const boxRect = captchaBox.getBoundingClientRect();
+            const labelRect = checkboxLabel.getBoundingClientRect();
+            const maxX = boxRect.width - labelRect.width - 20;
+            const maxY = boxRect.height - labelRect.height - 20;
+            checkboxContainer.style.left = `${10 + Math.floor(Math.random() * maxX)}px`;
+            checkboxContainer.style.top = `${10 + Math.floor(Math.random() * maxY)}px`;
+        }
+        
+        function showTrollMessage(customMessage, isSuccess = false) {
+            trollMessage.textContent = customMessage || trollMessages[Math.floor(Math.random() * trollMessages.length)];
+            trollMessage.style.color = isSuccess ? 'var(--blue)' : 'var(--red)';
+            trollMessage.classList.add('visible');
+            setTimeout(() => trollMessage.classList.remove('visible'), 1500);
+        }
+        
+        function increasePain() {
+            painLevel += 5;
+            updatePainCounter();
+        }
+        
+        function updatePainCounter() {
+            painCounter.textContent = `PAIN LEVEL: ${painLevel}`;
+        }
+    </script>
+</body>
+</html>

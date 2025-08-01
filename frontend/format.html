@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Utilities</title>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body { display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #0000aa; color: #fff; font-family: 'Courier Prime', monospace; }
+        #container { text-align: center; }
+        .button { padding: 20px 40px; margin: 20px; font-size: 1.5rem; cursor: pointer; background-color: #c0c0c0; border: 2px solid; border-color: #fff #808080 #808080 #fff; color: #000; }
+        #formatScreen { display: none; text-align: left; background: #000; width: 100vw; height: 100vh; padding: 20px; box-sizing: border-box; }
+        #formatText { white-space: pre; font-family: 'Courier Prime', monospace; font-size: 1rem;}
+        #messageBox { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #c0c0c0; border: 2px solid; border-color: #fff #808080 #808080 #fff; padding: 2rem; color: #000; z-index: 10; text-align: center;}
+        #messageBox button { margin-top: 1rem; padding: 5px 10px; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>System Maintenance</h1>
+        <p>Please select an option.</p>
+        <div>
+            <button class="button" onclick="doNothing()">Defrag</button>
+            <button class="button" onclick="doNothing()">Scan</button>
+            <button class="button" onclick="startFormat()">Clean Up</button>
+        </div>
+    </div>
+    <div id="formatScreen">
+        <div id="formatText"></div>
+    </div>
+    <div id="messageBox">
+        <p>System check complete. No issues found.</p>
+        <button onclick="document.getElementById('messageBox').style.display='none'">OK</button>
+    </div>
+
+    <script>
+        const container = document.getElementById('container');
+        const formatScreen = document.getElementById('formatScreen');
+        const formatText = document.getElementById('formatText');
+        const messageBox = document.getElementById('messageBox');
+
+        function doNothing() {
+            messageBox.style.display = 'block';
+        }
+
+        function startFormat() {
+            container.style.display = 'none';
+            formatScreen.style.display = 'block';
+            let text = "WARNING: All data on drive C: will be lost!\nFormatting drive C:...\n\n";
+            let percent = 0;
+            formatText.textContent = text;
+
+            const interval = setInterval(() => {
+                percent++;
+                formatText.textContent += `Formatting... ${percent}%\n`;
+                window.scrollTo(0, document.body.scrollHeight);
+                if (percent >= 100) {
+                    clearInterval(interval);
+                    formatText.textContent += "\nFormat complete.\n\nJust kidding. Did you panic?\n\nRedirecting you back to your miserable existence...";
+                    setTimeout(() => {
+                        window.location.href = 'home.html';
+                    }, 4000);
+                }
+            }, 50);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misery OS - Welcome to Despair</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff3333; /* Aggressive Red */
+            --secondary: #33ff33; /* Sickly Green */
+            --dark: #05000a;
+            --light: #dcdcdc;
+            --glitch-speed: 2.5s;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--dark);
+            color: var(--light);
+            font-family: 'Press Start 2P', cursive;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 85% 15%, rgba(255, 51, 51, 0.15) 0%, transparent 30%),
+                radial-gradient(circle at 15% 85%, rgba(51, 255, 51, 0.1) 0%, transparent 30%),
+                repeating-linear-gradient(
+                    45deg,
+                    rgba(255, 255, 255, 0.01),
+                    rgba(255, 255, 255, 0.01) 1px,
+                    transparent 1px,
+                    transparent 30px
+                );
+            animation: bg-flicker 10s linear infinite;
+        }
+        
+        @keyframes bg-flicker {
+            0%, 100% { background-color: var(--dark); }
+            50% { background-color: #08000f; }
+        }
+
+        .container {
+            width: 95%;
+            max-width: 800px;
+            background: rgba(10, 0, 20, 0.8);
+            border: 3px solid var(--primary);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 
+                0 0 25px var(--primary),
+                inset 0 0 20px rgba(255, 51, 51, 0.2);
+            text-align: center;
+            backdrop-filter: blur(3px);
+            animation: container-glitch 15s infinite alternate;
+        }
+
+        @keyframes container-glitch {
+            0% { transform: translate(0,0) skew(0); }
+            49% { transform: translate(0,0) skew(0); }
+            50% { transform: translate(2px, -1px) skew(-0.5deg); border-color: var(--secondary); }
+            51% { transform: translate(0,0) skew(0); }
+            100% { transform: translate(0,0) skew(0); }
+        }
+
+        .header {
+            margin-bottom: 2rem;
+        }
+
+        .title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            color: var(--primary);
+            text-shadow: 0 0 15px var(--primary);
+            margin: 0;
+            animation: text-flicker var(--glitch-speed) infinite;
+        }
+
+        @keyframes text-flicker {
+            0% { opacity: 1; text-shadow: 0 0 15px var(--primary); }
+            48% { opacity: 1; text-shadow: 0 0 15px var(--primary); }
+            50% { opacity: 0.6; text-shadow: 0 0 15px var(--secondary); }
+            52% { opacity: 1; text-shadow: 0 0 15px var(--primary); }
+            70% { opacity: 1; text-shadow: 0 0 15px var(--primary); }
+            72% { opacity: 0.7; transform: skew(-2deg); }
+            74% { opacity: 1; transform: skew(0); }
+            100% { opacity: 1; }
+        }
+
+        .subtitle {
+            color: var(--secondary);
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            letter-spacing: 2px;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .game-module {
+            background: rgba(0,0,0,0.6);
+            border: 2px solid var(--secondary);
+            border-radius: 10px;
+            padding: 1.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-module:hover {
+            transform: translateY(-5px) scale(1.05);
+            background: rgba(51, 255, 51, 0.1);
+            box-shadow: 0 0 15px var(--secondary);
+        }
+        
+        .game-module::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .game-module:hover::before {
+            left: 100%;
+        }
+
+        .game-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            color: var(--secondary);
+            margin: 0 0 1rem 0;
+        }
+
+        .game-status {
+            font-size: 0.7rem;
+            color: var(--primary);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            width: 90%;
+            max-width: 500px;
+            padding: 2rem;
+            background: var(--dark);
+            border: 3px solid var(--primary);
+            border-radius: 10px;
+            text-align: center;
+            animation: modal-appear 0.5s;
+        }
+        
+        @keyframes modal-appear {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .modal-text {
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255,51,51,0.2);
+            border: 1px solid var(--primary);
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+        
+        #loadingBar {
+            width: 0%;
+            height: 100%;
+            background: var(--secondary);
+            animation: load-anim 2s linear forwards;
+        }
+        
+        @keyframes load-anim {
+            0% { width: 0%; }
+            90% { width: 95%; }
+            100% { width: 98%; }
+        }
+        
+        .ticker-wrap {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--primary);
+            padding: 5px 0;
+            overflow: hidden;
+        }
+        
+        .ticker {
+            display: inline-block;
+            white-space: nowrap;
+            color: var(--dark);
+            font-size: 1rem;
+            animation: ticker-scroll 45s linear infinite;
+        }
+        
+        @keyframes ticker-scroll {
+            from { transform: translateX(100%); }
+            to { transform: translateX(-100%); }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container" id="container">
+        <div class="header">
+            <h1 class="title">MISERY OS</h1>
+            <p class="subtitle" id="subtitle">> ACCESS GRANTED. WELCOME TO THE SYSTEM.</p>
+        </div>
+        
+        <div class="game-grid" id="gameGrid">
+            <!-- Game modules will be injected by JS -->
+        </div>
+    </div>
+    
+    <div class="ticker-wrap">
+        <div class="ticker" id="ticker">
+           <!-- Ticker text will be injected by JS -->
+        </div>
+    </div>
+    
+    <div class="modal" id="loadingModal">
+        <div class="modal-content">
+            <h2 class="modal-title" id="modalTitle">INITIALIZING...</h2>
+            <p class="modal-text" id="modalText"></p>
+            <div class="progress-bar">
+                <div id="loadingBar"></div>
+            </div>
+            <p id="loadingStatus">Loading misery.exe...</p>
+        </div>
+    </div>
+
+
+    <script>
+        const gameGrid = document.getElementById('gameGrid');
+        const loadingModal = document.getElementById('loadingModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalText = document.getElementById('modalText');
+        const loadingBar = document.getElementById('loadingBar');
+        const loadingStatus = document.getElementById('loadingStatus');
+        const ticker = document.getElementById('ticker');
+
+        const games = [
+            { 
+                id: "reauth",
+                title: "RE-AUTHENTICATE", 
+                status: "RETURN TO THE GATES",
+                description: "You seem too happy. Your system access privileges require constant re-validation. Please prove your misery again.",
+                url: "index.html"
+            },
+            { 
+                id: "runner",
+                title: "RAGE-QUIT RUNNER", 
+                status: "UNFAIR PHYSICS",
+                description: "An endless runner where the controls randomly invert and obstacles appear with no warning. Your failure is guaranteed.",
+                url: "runner.html"
+            },
+            { 
+                id: "tictactoe",
+                title: "UNWINNABLE TIC-TAC-TOE", 
+                status: "LOGIC CORRUPTED",
+                description: "Play against an AI that can place its mark on two squares at once. It has already won before you begin.",
+                url: "tictactoe.html"
+            },
+            { 
+                id: "stabilizer",
+                title: "QUANTUM STABILIZER", 
+                status: "HIGH FRUSTRATION",
+                description: "The core is unstable! Try to click it. We dare you. It actively avoids your cursor with pixel-perfect precision.",
+                url: "stabilizer.html"
+            },
+            {
+                id: "memory",
+                title: "MEMORY LEAK SIM",
+                status: "CRASH IMMINENT",
+                description: "A memory game that 'forgets' the correct pairs and crashes the app just before you can win. All progress will be lost.",
+                url: "memory.html"
+            },
+            {
+                id: "format",
+                title: "SURPRISE FORMAT C:",
+                status: "DATA LOSS GUARANTEED",
+                description: "Is it a game, or is it a system utility? There are three buttons. Two do nothing. One... doesn't. Feeling lucky?",
+                url: "format.html"
+            }
+        ];
+        
+        const tickerMessages = [
+            "Why are you even here?",
+            "This won't be fun.",
+            "Your best isn't good enough.",
+            "Abandon all hope, ye who enter here.",
+            "The house always wins.",
+            "Error 404: Joy not found.",
+            "Resistance is futile. And pointless.",
+            "This application is a monument to your failures.",
+            "Go ahead. Try to have fun.",
+            "We feed on your frustration.",
+            "Your clicks are meaningless."
+        ];
+
+        // Populate Games
+        games.forEach(game => {
+            const module = document.createElement('div');
+            module.className = 'game-module';
+            module.innerHTML = `
+                <h3 class="game-title">${game.title}</h3>
+                <p class="game-status">${game.status}</p>
+            `;
+            module.addEventListener('click', () => showLoadingSequence(game));
+            gameGrid.appendChild(module);
+        });
+        
+        // Populate Ticker
+        let tickerContent = "";
+        for(let i=0; i<5; i++) {
+            tickerContent += tickerMessages.join(" +++ ") + " +++ ";
+        }
+        ticker.textContent = tickerContent;
+
+        function showLoadingSequence(game) {
+            modalTitle.textContent = `LOADING: ${game.title}`;
+            modalText.textContent = game.description;
+            loadingStatus.textContent = "Injecting despair protocols...";
+            loadingModal.style.display = 'flex';
+            
+            // Reset animation
+            loadingBar.style.animation = 'none';
+            loadingBar.offsetHeight; /* trigger reflow */
+            loadingBar.style.animation = null; 
+
+            setTimeout(() => {
+                loadingStatus.textContent = "Calibrating frustration engine...";
+            }, 1000);
+            
+            setTimeout(() => {
+                window.location.href = game.url;
+            }, 2500);
+        }
+
+    </script>
+</body>
+</html>

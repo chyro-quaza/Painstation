@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rage-Quit Runner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; background-color: #05000a; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; font-family: 'Press Start 2P', cursive; color: #ff3333; }
+        canvas { background-color: #0d0221; border: 3px solid #ff3333; }
+        #infoPanel { text-align: center; margin-top: 20px; }
+        #tauntMessage { font-size: 1.5rem; height: 2em; }
+        #controlsInfo { font-size: 0.8rem; color: #33ff33; }
+        #homeButton { margin-top: 15px; padding: 10px 20px; background: #ff3333; color: #05000a; border: none; font-family: 'Press Start 2P', cursive; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div id="infoPanel">
+        <div id="tauntMessage">Good Luck. You'll need it.</div>
+        <div id="controlsInfo">USE ARROW KEYS TO MOVE</div>
+    </div>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <button id="homeButton" onclick="window.location.href='home.html'">ABANDON ATTEMPT</button>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const tauntEl = document.getElementById('tauntMessage');
+        const controlsEl = document.getElementById('controlsInfo');
+
+        const player = { x: 50, y: 350, width: 20, height: 40, dy: 0, onGround: true };
+        let platforms = [{ x: 0, y: 390, width: 800 }];
+        let frame = 0;
+        let gameOver = false;
+        let controlsInverted = false;
+        const taunts = ["Pathetic.", "Is that all?", "My grandma can do better.", "You're not even trying.", "Predictable.", "Oops.", "How sad."];
+
+        function gameLoop() {
+            if (gameOver) {
+                ctx.fillStyle = 'rgba(255, 51, 51, 0.8)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#05000a';
+                ctx.font = '40px "Press Start 2P"';
+                ctx.textAlign = 'center';
+                ctx.fillText("YOU FAILED. AGAIN.", canvas.width / 2, canvas.height / 2);
+                return;
+            }
+
+            // Update
+            player.y += player.dy;
+            player.dy += 0.5; // Gravity
+            player.onGround = false;
+
+            platforms.forEach(p => {
+                p.x -= 2; // Move platforms
+                if (player.x < p.x + p.width && player.x + player.width > p.x && player.y + player.height > p.y && player.y + player.height < p.y + 20) {
+                    player.dy = 0;
+                    player.y = p.y - player.height;
+                    player.onGround = true;
+                }
+            });
+
+            if (player.y > canvas.height) gameOver = true;
+
+            // Generate/remove platforms
+            if (frame % 100 === 0) {
+                let lastPlatform = platforms[platforms.length - 1];
+                let newWidth = Math.random() < 0.3 ? 50 : 150; // Occasionally tiny platforms
+                let newGap = controlsInverted ? 200 : 100; // Bigger gaps with inverted controls
+                platforms.push({ x: lastPlatform.x + lastPlatform.width + newGap, y: 390, width: newWidth });
+            }
+            platforms = platforms.filter(p => p.x + p.width > 0);
+            
+            // Unfair events
+            if (frame % 500 === 0 && frame > 0) {
+                controlsInverted = !controlsInverted;
+                controlsEl.textContent = controlsInverted ? "CONTROLS INVERTED. SUFFER." : "USE ARROW KEYS TO MOVE";
+                tauntEl.textContent = "CAN'T KEEP UP?";
+            }
+             if (frame > 0 && frame % 300 === 0 && Math.random() < 0.4) {
+                platforms.splice(1, 1); // Randomly delete a platform ahead
+                tauntEl.textContent = taunts[Math.floor(Math.random() * taunts.length)];
+            }
+
+
+            // Draw
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#33ff33';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            platforms.forEach(p => ctx.fillRect(p.x, p.y, p.width, 10));
+
+            frame++;
+            requestAnimationFrame(gameLoop);
+        }
+
+        window.addEventListener('keydown', e => {
+            let moveLeft = e.key === 'ArrowLeft';
+            let moveRight = e.key === 'ArrowRight';
+            let jump = e.key === 'ArrowUp';
+
+            if (controlsInverted) {
+                [moveLeft, moveRight] = [moveRight, moveLeft];
+            }
+
+            if (jump && player.onGround) player.dy = -12;
+            if (moveLeft) player.x -= 5;
+            if (moveRight) player.x += 5;
+        });
+
+        gameLoop();
+    </script>
+</body>
+</html>
