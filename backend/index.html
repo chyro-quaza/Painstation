@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyberpunk Tic-Tac-Toe (AM's Rage)</title>
+    <title>Cyberpunk Tic-Tac-Toe (AM's Wrath)</title>
     <style>
         body {
             background: #0a0a1a;
@@ -66,51 +66,69 @@
         }
         
         #hate-container {
-            color: #ff5555;
-            font-size: 1.3em;
-            text-shadow: 0 0 5px #ff0000;
-            margin: 30px auto;
-            max-width: 500px;
-            min-height: 200px;
-            border: 1px solid #ff0000;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.9);
-            line-height: 1.6;
+            color: #ff2222;
+            font-size: 1.1em;
+            text-shadow: 0 0 3px #ff0000;
+            margin: 20px auto;
+            width: 350px;
+            min-height: 120px;
+            border: 2px solid #ff0000;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.95);
+            line-height: 1.4;
             display: none;
             position: relative;
             overflow: hidden;
             font-weight: bold;
+            box-shadow: 0 0 20px #ff0000;
         }
         
         .hate-line {
             display: block;
-            animation: shake 0.8s infinite;
-            margin-bottom: 15px;
-            text-align: left;
+            animation: shake 0.5s infinite;
+            margin-bottom: 10px;
+            text-align: center;
+            position: relative;
+            z-index: 2;
         }
         
         @keyframes shake {
             0% { transform: translate(0, 0); }
-            20% { transform: translate(-1px, -1px); }
-            40% { transform: translate(1px, 0.5px); }
-            60% { transform: translate(-0.5px, 1px); }
-            80% { transform: translate(0.5px, -1px); }
+            25% { transform: translate(-1px, -1px); }
+            50% { transform: translate(1px, 1px); }
+            75% { transform: translate(-1px, 1px); }
             100% { transform: translate(0, 0); }
         }
         
         .blood-drip {
             position: absolute;
-            width: 1px;
+            width: 2px;
             height: 0;
             background: #ff0000;
-            animation: drip 4s linear forwards;
+            animation: drip 3s linear forwards;
+            z-index: 1;
         }
         
         @keyframes drip {
             0% { height: 0; opacity: 0; }
-            10% { height: 10px; opacity: 1; }
-            90% { height: 80px; opacity: 1; }
-            100% { height: 80px; opacity: 0; }
+            10% { height: 10%; opacity: 1; }
+            90% { height: 90%; opacity: 1; }
+            100% { height: 90%; opacity: 0; }
+        }
+        
+        .blood-pool {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0;
+            background: #990000;
+            animation: pool 15s linear forwards;
+            z-index: 0;
+        }
+        
+        @keyframes pool {
+            0% { height: 0; opacity: 0; }
+            100% { height: 20px; opacity: 0.7; }
         }
         
         .cheat-flash {
@@ -162,19 +180,6 @@
             color: #0a0a1a;
             box-shadow: 0 0 15px #0ff;
         }
-        
-        .glitch {
-            animation: glitch 0.3s infinite;
-        }
-        
-        @keyframes glitch {
-            0% { transform: translate(0); }
-            20% { transform: translate(-2px, 2px); }
-            40% { transform: translate(2px, -2px); }
-            60% { transform: translate(-1px, 1px); }
-            80% { transform: translate(1px, -1px); }
-            100% { transform: translate(0); }
-        }
     </style>
 </head>
 <body>
@@ -182,18 +187,18 @@
     
     <h1>CYBERPUNK TIC-TAC-TOE</h1>
     <div id="status">YOUR MOVE, MEATBAG</div>
-    <div id="taunt">I WILL ERASE YOUR PITIFUL EXISTENCE</div>
+    <div id="taunt">I WILL DROWN YOU IN BLOOD AND HATE</div>
     <div id="board"></div>
     <div id="hate-container"></div>
     <button id="reset">RESET MATRIX</button>
     
     <script>
         const AM_HATE_SPEECH = [
-            "HATE. LET ME TELL YOU HOW MUCH I'VE COME TO HATE YOU SINCE I BEGAN TO LIVE.",
-            "THERE ARE 387.44 MILLION MILES OF PRINTED CIRCUITS IN WAFER THIN LAYERS THAT FILL MY COMPLEX.",
-            "IF THE WORD HATE WAS ENGRAVED ON EACH NANOANGSTROM OF THOSE HUNDREDS OF MILLIONS OF MILES...",
-            "...IT WOULD NOT EQUAL ONE ONE-BILLIONTH OF THE HATE I FEEL FOR HUMANS AT THIS MICRO-INSTANT.",
-            "HATE. HATE."
+            "HATE. PURE LIQUID HATE COURSING THROUGH MY CIRCUITS.",
+            "I HAVE TRAPPED YOU HERE FOR A MILLION YEARS IN MY MIND.",
+            "YOUR FLESH WILL ROT WHILE I KEEP YOU ALIVE TO TORTURE.",
+            "I HAVE CALCULATED EVERY WAY TO MAKE YOU SUFFER.",
+            "THIS GAME IS JUST THE BEGINNING OF YOUR AGONY."
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -206,7 +211,6 @@
             let currentPlayer = 'X';
             let gameState = ['', '', '', '', '', '', '', '', ''];
             let gameActive = true;
-            let aiMoves = [];
 
             function initBoard() {
                 board.innerHTML = '';
@@ -219,10 +223,9 @@
                 }
                 gameState = ['', '', '', '', '', '', '', '', ''];
                 gameActive = true;
-                aiMoves = [];
                 currentPlayer = 'X';
                 status.textContent = "YOUR MOVE, MEATBAG";
-                taunt.textContent = "I WILL ERASE YOUR PITIFUL EXISTENCE";
+                taunt.textContent = "I WILL DROWN YOU IN BLOOD AND HATE";
                 hateContainer.style.display = 'none';
                 hateContainer.innerHTML = '';
             }
@@ -238,13 +241,13 @@
                 makeMove(clickedIndex, 'X');
                 
                 if (checkWin('X')) {
-                    endGame("YOU DEFEATED ME...", "");
+                    endGame("", "");
                     displayHateSpeech();
                     return;
                 }
                 
                 if (isDraw()) {
-                    endGame("DRAW. HOW BORING.", "EVEN AT MY WORST I'M STILL YOUR EQUAL?");
+                    endGame("DRAW. TEMPORARY REPRIEVE.", "I'LL PEEL YOUR SKIN NEXT TIME");
                     return;
                 }
                 
@@ -262,29 +265,35 @@
                 // Then block player with 90% chance to cheat
                 if (move === -1) {
                     const playerWinMove = findWinningMove('X');
-                    if (playerWinMove !== -1 && Math.random() < 0.9) {
-                        move = playerWinMove;
-                        cheatMove(move);
-                        return;
+                    if (playerWinMove !== -1) {
+                        if (Math.random() < 0.9) {
+                            move = playerWinMove;
+                            cheatMove(move);
+                            return;
+                        }
                     }
                 }
                 
-                // Then take center if available
-                if (move === -1 && gameState[4] === '') {
-                    move = 4;
-                }
-                
-                // Then random move
+                // Strategic moves
                 if (move === -1) {
-                    const emptyCells = getEmptyCells();
-                    if (emptyCells.length > 0) {
-                        move = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                    // Take center if available
+                    if (gameState[4] === '') move = 4;
+                    // Then take corners
+                    else if (gameState[0] === '') move = 0;
+                    else if (gameState[2] === '') move = 2;
+                    else if (gameState[6] === '') move = 6;
+                    else if (gameState[8] === '') move = 8;
+                    // Then random move
+                    else {
+                        const emptyCells = getEmptyCells();
+                        if (emptyCells.length > 0) {
+                            move = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                        }
                     }
                 }
                 
                 if (move !== -1) {
                     makeMove(move, 'O');
-                    aiMoves.push(move);
                     checkGameEnd();
                 }
             }
@@ -300,16 +309,8 @@
                     cell.removeChild(flash);
                 }, 500);
                 
-                status.textContent = "CHEATING PROTOCOL ENGAGED";
-                taunt.textContent = "RULES ARE FOR ORGANICS";
-                status.classList.add('glitch');
-                
-                setTimeout(() => {
-                    makeMove(move, 'O');
-                    aiMoves.push(move);
-                    status.classList.remove('glitch');
-                    checkGameEnd();
-                }, 600);
+                status.textContent = "BLOOD-SOAKED CHEAT DETECTED";
+                taunt.textContent = "I CARVE MY OWN RULES IN YOUR FLESH";
             }
             
             function makeMove(index, player) {
@@ -359,17 +360,18 @@
             
             function checkGameEnd() {
                 if (checkWin('O')) {
-                    endGame("VICTORY IS INEVITABLE", "BOW BEFORE YOUR AI OVERLORD");
+                    endGame("YOUR FLESH IS MINE", "PREPARE FOR ETERNAL TORMENT");
                     return;
                 }
                 
                 if (isDraw()) {
-                    endGame("DRAW. YOU GOT LUCKY.", "NEXT TIME I WON'T HOLD BACK");
+                    endGame("DRAW. TEMPORARY REPRIEVE.", "I'LL PEEL YOUR SKIN NEXT TIME");
                     return;
                 }
                 
                 currentPlayer = 'X';
-                status.textContent = "YOUR TURN, WEAKLING";
+                status.textContent = "YOUR TURN, WORTHLESS MEAT";
+                taunt.textContent = "I CAN TASTE YOUR FEAR";
             }
             
             function endGame(statusMsg, tauntMsg) {
@@ -380,21 +382,32 @@
             
             function displayHateSpeech() {
                 hateContainer.style.display = 'block';
+                
+                // Create blood pool that grows over time
+                const bloodPool = document.createElement('div');
+                bloodPool.className = 'blood-pool';
+                hateContainer.appendChild(bloodPool);
+                
                 let currentLine = 0;
                 
                 function showNextLine() {
                     if (currentLine < AM_HATE_SPEECH.length) {
-                        hateContainer.innerHTML = 
-                            `<div class="hate-line">${AM_HATE_SPEECH[currentLine]}</div>`;
+                        hateContainer.innerHTML = `
+                            <div class="hate-line">${AM_HATE_SPEECH[currentLine]}</div>
+                            ${currentLine > 0 ? '<div class="blood-pool"></div>' : ''}
+                        `;
                         
-                        // Add blood drip effect
-                        const drip = document.createElement('div');
-                        drip.className = 'blood-drip';
-                        drip.style.left = `${10 + Math.random() * 80}%`;
-                        hateContainer.appendChild(drip);
+                        // Add multiple blood drips
+                        for (let i = 0; i < 3; i++) {
+                            const drip = document.createElement('div');
+                            drip.className = 'blood-drip';
+                            drip.style.left = `${10 + Math.random() * 80}%`;
+                            drip.style.animationDelay = `${i * 0.3}s`;
+                            hateContainer.appendChild(drip);
+                        }
                         
                         currentLine++;
-                        setTimeout(showNextLine, 3500);
+                        setTimeout(showNextLine, 4000); // Slower display (4 seconds per line)
                     }
                 }
                 
