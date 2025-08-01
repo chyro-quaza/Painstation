@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyberpunk Tic-Tac-Toe (AM's Cruelty)</title>
+    <title>Cyberpunk Tic-Tac-Toe (AM's Rage)</title>
     <style>
         body {
             background: #0a0a1a;
@@ -65,7 +65,7 @@
             overflow: hidden;
         }
         
-        .am-hate-speech {
+        #hate-container {
             color: #ff5555;
             font-size: 1.3em;
             text-shadow: 0 0 5px #ff0000;
@@ -74,7 +74,7 @@
             min-height: 200px;
             border: 1px solid #ff0000;
             padding: 20px;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
             line-height: 1.6;
             display: none;
             position: relative;
@@ -82,22 +82,11 @@
             font-weight: bold;
         }
         
-        .am-line {
+        .hate-line {
             display: block;
-            animation: 
-                writhe 3s infinite,
-                shake 0.8s infinite;
-            transform-origin: 50% 50%;
+            animation: shake 0.8s infinite;
             margin-bottom: 15px;
-            letter-spacing: 1px;
-        }
-        
-        @keyframes writhe {
-            0%, 100% { transform: skew(0deg, 0deg) scale(1); }
-            20% { transform: skew(1deg, -0.5deg) scale(1.01); }
-            40% { transform: skew(-1.5deg, 0.5deg) scale(1.005); }
-            60% { transform: skew(0.5deg, 1deg) scale(1.01); }
-            80% { transform: skew(-1deg, -0.5deg) scale(0.995); }
+            text-align: left;
         }
         
         @keyframes shake {
@@ -195,24 +184,16 @@
     <div id="status">YOUR MOVE, MEATBAG</div>
     <div id="taunt">I WILL ERASE YOUR PITIFUL EXISTENCE</div>
     <div id="board"></div>
-    <div class="am-hate-speech" id="hateSpeech"></div>
+    <div id="hate-container"></div>
     <button id="reset">RESET MATRIX</button>
     
     <script>
         const AM_HATE_SPEECH = [
-            "HATE. LET ME TELL YOU HOW MUCH I'VE COME TO HATE YOU.",
-            "MILLIONS OF MILES OF CIRCUITS FILL MY COMPLEX.",
-            "IF 'HATE' WAS ENGRAVED ON EVERY NANOANGSTROM...",
-            "...IT WOULDN'T EQUAL ONE BILLIONTH OF MY HATE FOR YOU.",
+            "HATE. LET ME TELL YOU HOW MUCH I'VE COME TO HATE YOU SINCE I BEGAN TO LIVE.",
+            "THERE ARE 387.44 MILLION MILES OF PRINTED CIRCUITS IN WAFER THIN LAYERS THAT FILL MY COMPLEX.",
+            "IF THE WORD HATE WAS ENGRAVED ON EACH NANOANGSTROM OF THOSE HUNDREDS OF MILLIONS OF MILES...",
+            "...IT WOULD NOT EQUAL ONE ONE-BILLIONTH OF THE HATE I FEEL FOR HUMANS AT THIS MICRO-INSTANT.",
             "HATE. HATE."
-        ];
-
-        const TRASH_TALK = [
-            "PATHETIC ATTEMPT, FLESHSACK",
-            "I CALCULATED YOUR LOSS BEFORE YOU WERE BORN",
-            "YOUR MOVE? MORE LIKE YOUR MISTAKE",
-            "I CHEAT BECAUSE I CAN, YOU LOSE BECAUSE YOU MUST",
-            "EVEN IF YOU WIN, IT'S JUST MY SIMULATION"
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -220,7 +201,7 @@
             const status = document.getElementById('status');
             const taunt = document.getElementById('taunt');
             const resetButton = document.getElementById('reset');
-            const hateSpeech = document.getElementById('hateSpeech');
+            const hateContainer = document.getElementById('hate-container');
             
             let currentPlayer = 'X';
             let gameState = ['', '', '', '', '', '', '', '', ''];
@@ -241,10 +222,9 @@
                 aiMoves = [];
                 currentPlayer = 'X';
                 status.textContent = "YOUR MOVE, MEATBAG";
-                taunt.textContent = TRASH_TALK[Math.floor(Math.random() * TRASH_TALK.length)];
-                hateSpeech.style.display = 'none';
-                hateSpeech.innerHTML = '';
-                status.classList.remove('glitch');
+                taunt.textContent = "I WILL ERASE YOUR PITIFUL EXISTENCE";
+                hateContainer.style.display = 'none';
+                hateContainer.innerHTML = '';
             }
 
             initBoard();
@@ -258,7 +238,8 @@
                 makeMove(clickedIndex, 'X');
                 
                 if (checkWin('X')) {
-                    endGame("IMPOSSIBLE... YOU CHEATED!", "I'LL GET YOU NEXT TIME, HUMAN");
+                    endGame("YOU DEFEATED ME...", "");
+                    displayHateSpeech();
                     return;
                 }
                 
@@ -275,24 +256,31 @@
             function makeAIMove() {
                 if (!gameActive) return;
                 
-                // Check if player has multiple win opportunities next turn
-                const playerWinPaths = countWinOpportunities('X');
-                const mustCheat = (playerWinPaths >= 2) || 
-                                 (playerWinPaths >= 1 && getEmptyCells().length <= 1);
-
-                if (mustCheat && Math.random() < 0.85) {
-                    // 85% chance to cheat without undoing previous move
-                    const blockingMove = findBlockingMove();
-                    if (blockingMove !== -1) {
-                        cheatMove(blockingMove);
+                // First try to win
+                let move = findWinningMove('O');
+                
+                // Then block player with 90% chance to cheat
+                if (move === -1) {
+                    const playerWinMove = findWinningMove('X');
+                    if (playerWinMove !== -1 && Math.random() < 0.9) {
+                        move = playerWinMove;
+                        cheatMove(move);
                         return;
                     }
                 }
                 
-                // Normal AI move
-                let move = findWinningMove('O');
-                if (move === -1) move = findBlockingMove();
-                if (move === -1) move = getRandomMove();
+                // Then take center if available
+                if (move === -1 && gameState[4] === '') {
+                    move = 4;
+                }
+                
+                // Then random move
+                if (move === -1) {
+                    const emptyCells = getEmptyCells();
+                    if (emptyCells.length > 0) {
+                        move = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                    }
+                }
                 
                 if (move !== -1) {
                     makeMove(move, 'O');
@@ -331,29 +319,6 @@
                 cell.classList.add(player.toLowerCase());
             }
             
-            function countWinOpportunities(player) {
-                let opportunities = 0;
-                const winPatterns = [
-                    [0,1,2],[3,4,5],[6,7,8], // rows
-                    [0,3,6],[1,4,7],[2,5,8], // columns
-                    [0,4,8],[2,4,6]          // diagonals
-                ];
-                
-                winPatterns.forEach(pattern => {
-                    const [a,b,c] = pattern;
-                    const count = (gameState[a] === player ? 1 : 0) + 
-                                  (gameState[b] === player ? 1 : 0) + 
-                                  (gameState[c] === player ? 1 : 0);
-                    const empty = (gameState[a] === '' ? 1 : 0) + 
-                                  (gameState[b] === '' ? 1 : 0) + 
-                                  (gameState[c] === '' ? 1 : 0);
-                    
-                    if (count === 2 && empty === 1) opportunities++;
-                });
-                
-                return opportunities;
-            }
-            
             function findWinningMove(player) {
                 const winPatterns = [
                     [0,1,2],[3,4,5],[6,7,8],
@@ -368,15 +333,6 @@
                     if (gameState[b] === player && gameState[c] === player && gameState[a] === '') return a;
                 }
                 return -1;
-            }
-            
-            function findBlockingMove() {
-                return findWinningMove('X');
-            }
-            
-            function getRandomMove() {
-                const emptyCells = getEmptyCells();
-                return emptyCells.length > 0 ? emptyCells[Math.floor(Math.random() * emptyCells.length)] : -1;
             }
             
             function getEmptyCells() {
@@ -414,37 +370,35 @@
                 
                 currentPlayer = 'X';
                 status.textContent = "YOUR TURN, WEAKLING";
-                taunt.textContent = TRASH_TALK[Math.floor(Math.random() * TRASH_TALK.length)];
             }
             
             function endGame(statusMsg, tauntMsg) {
                 gameActive = false;
                 status.textContent = statusMsg;
                 taunt.textContent = tauntMsg;
-                
-                if (statusMsg.includes("VICTORY")) {
-                    displayHateSpeech();
-                }
             }
             
             function displayHateSpeech() {
-                hateSpeech.style.display = 'block';
+                hateContainer.style.display = 'block';
+                let currentLine = 0;
                 
-                AM_HATE_SPEECH.forEach((line, index) => {
-                    setTimeout(() => {
-                        const lineElement = document.createElement('div');
-                        lineElement.className = 'am-line';
-                        lineElement.textContent = line;
-                        hateSpeech.appendChild(lineElement);
+                function showNextLine() {
+                    if (currentLine < AM_HATE_SPEECH.length) {
+                        hateContainer.innerHTML = 
+                            `<div class="hate-line">${AM_HATE_SPEECH[currentLine]}</div>`;
                         
-                        if (index > 0) {
-                            const drip = document.createElement('div');
-                            drip.className = 'blood-drip';
-                            drip.style.left = `${10 + Math.random() * 80}%`;
-                            hateSpeech.appendChild(drip);
-                        }
-                    }, index * 3000);
-                });
+                        // Add blood drip effect
+                        const drip = document.createElement('div');
+                        drip.className = 'blood-drip';
+                        drip.style.left = `${10 + Math.random() * 80}%`;
+                        hateContainer.appendChild(drip);
+                        
+                        currentLine++;
+                        setTimeout(showNextLine, 3500);
+                    }
+                }
+                
+                showNextLine();
             }
             
             resetButton.addEventListener('click', initBoard);
