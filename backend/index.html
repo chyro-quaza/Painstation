@@ -1,28 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>PainStation - Login to Suffer</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+
   <h1>Welcome to PainStation™</h1>
 
+  <!-- Login -->
   <h2>Login</h2>
-  <input type="email" id="loginEmail" placeholder="Email">
-  <input type="password" id="loginPassword" placeholder="Password">
+  <input type="email" id="loginEmail" placeholder="Email" />
+  <input type="password" id="loginPassword" placeholder="Password" />
   <button onclick="login()">Enter the Torture Chamber</button>
 
+  <!-- Register -->
   <h2>Register</h2>
-  <input type="email" id="registerEmail" placeholder="Email">
-  <input type="password" id="registerPassword" placeholder="Password">
+  <input type="email" id="registerEmail" placeholder="Email" />
+  <input type="password" id="registerPassword" placeholder="Password" />
   <button onclick="register()">Create Pain Account</button>
 
+  <!-- Pain Score -->
   <h2>Simulate Pain Score</h2>
-  <input type="number" id="scoreInput" placeholder="Pain Score">
-  <input type="number" id="failInput" placeholder="Failures">
+  <input type="number" id="scoreInput" placeholder="Pain Score" />
+  <input type="number" id="failInput" placeholder="Failures" />
   <button onclick="savePainData()">Record Suffering</button>
 
   <p id="status"></p>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstati
+  <!-- Scripts -->
+  <script src="script.js"></script>
+</body>
+</html>
