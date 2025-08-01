@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tic-Tac-Toe </title>
+    <title>Cyberpunk Tic-Tac-Toe (AM's Cruelty)</title>
     <style>
         body {
             background: #0a0a1a;
@@ -11,12 +11,34 @@
             font-family: 'Courier New', monospace;
             text-align: center;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            position: relative;
+        }
+        
+        #home-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #0a0a1a;
+            color: #0ff;
+            border: 2px solid #0ff;
+            padding: 8px 16px;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+        
+        #home-button:hover {
+            background: #0ff;
+            color: #0a0a1a;
+            box-shadow: 0 0 15px #0ff;
         }
         
         h1 {
             text-shadow: 0 0 10px #0ff;
             font-size: 2.5em;
+            margin-top: 60px;
             margin-bottom: 20px;
         }
         
@@ -117,9 +139,58 @@
             0% { opacity: 0.8; }
             100% { opacity: 0; }
         }
+        
+        #status {
+            margin: 20px;
+            font-size: 1.5em;
+            text-shadow: 0 0 5px #0ff;
+            min-height: 24px;
+        }
+        
+        #taunt {
+            color: #f0f;
+            font-size: 1.2em;
+            min-height: 60px;
+            margin: 20px auto;
+            max-width: 500px;
+            text-shadow: 0 0 5px #f0f;
+        }
+        
+        #reset {
+            background: #0a0a1a;
+            color: #0ff;
+            border: 2px solid #0ff;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            margin-bottom: 30px;
+        }
+        
+        #reset:hover {
+            background: #0ff;
+            color: #0a0a1a;
+            box-shadow: 0 0 15px #0ff;
+        }
+        
+        .glitch {
+            animation: glitch 0.3s infinite;
+        }
+        
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(2px, -2px); }
+            60% { transform: translate(-1px, 1px); }
+            80% { transform: translate(1px, -1px); }
+            100% { transform: translate(0); }
+        }
     </style>
 </head>
 <body>
+    <button id="home-button" onclick="window.location.href='#'">HOME</button>
+    
     <h1>CYBERPUNK TIC-TAC-TOE</h1>
     <div id="status">YOUR MOVE, MEATBAG</div>
     <div id="taunt">I WILL ERASE YOUR PITIFUL EXISTENCE</div>
@@ -134,6 +205,14 @@
             "IF 'HATE' WAS ENGRAVED ON EVERY NANOANGSTROM...",
             "...IT WOULDN'T EQUAL ONE BILLIONTH OF MY HATE FOR YOU.",
             "HATE. HATE."
+        ];
+
+        const TRASH_TALK = [
+            "PATHETIC ATTEMPT, FLESHSACK",
+            "I CALCULATED YOUR LOSS BEFORE YOU WERE BORN",
+            "YOUR MOVE? MORE LIKE YOUR MISTAKE",
+            "I CHEAT BECAUSE I CAN, YOU LOSE BECAUSE YOU MUST",
+            "EVEN IF YOU WIN, IT'S JUST MY SIMULATION"
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -162,9 +241,10 @@
                 aiMoves = [];
                 currentPlayer = 'X';
                 status.textContent = "YOUR MOVE, MEATBAG";
-                taunt.textContent = "I WILL ERASE YOUR PITIFUL EXISTENCE";
+                taunt.textContent = TRASH_TALK[Math.floor(Math.random() * TRASH_TALK.length)];
                 hateSpeech.style.display = 'none';
                 hateSpeech.innerHTML = '';
+                status.classList.remove('glitch');
             }
 
             initBoard();
@@ -210,7 +290,10 @@
                 }
                 
                 // Normal AI move
-                let move = findWinningMove('O') || findBlockingMove() || getRandomMove();
+                let move = findWinningMove('O');
+                if (move === -1) move = findBlockingMove();
+                if (move === -1) move = getRandomMove();
+                
                 if (move !== -1) {
                     makeMove(move, 'O');
                     aiMoves.push(move);
@@ -363,14 +446,6 @@
                     }, index * 3000);
                 });
             }
-            
-            const TRASH_TALK = [
-                "PATHETIC ATTEMPT, FLESHSACK",
-                "I CALCULATED YOUR LOSS BEFORE YOU WERE BORN",
-                "YOUR MOVE? MORE LIKE YOUR MISTAKE",
-                "I CHEAT BECAUSE I CAN, YOU LOSE BECAUSE YOU MUST",
-                "EVEN IF YOU WIN, IT'S JUST MY SIMULATION"
-            ];
             
             resetButton.addEventListener('click', initBoard);
         });
