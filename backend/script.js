@@ -1,4 +1,3 @@
-// game.js
 document.addEventListener('DOMContentLoaded', () => {
     const board = document.getElementById('board');
     const status = document.getElementById('status');
@@ -7,92 +6,101 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentPlayer = 'X';
     let gameState = ['', '', '', '', '', '', '', '', ''];
     let gameActive = true;
-    let cheatAttempts = 0; // How many times AI cheated
-    
-    // Create the board cells
-    for (let i = 0; i < 9; i++) {
-        const cell = document.createElement('div');
-        cell.classList.add('cell');
-        cell.setAttribute('data-index', i);
-        cell.addEventListener('click', handleCellClick);
-        board.appendChild(cell);
+    let cheatAttempts = 0;
+    let lastAIMove = null;
+
+    // Initialize the board
+    function initBoard() {
+        board.innerHTML = '';
+        for (let i = 0; i < 9; i++) {
+            const cell = document.createElement('div');
+            cell.classList.add('cell');
+            cell.setAttribute('data-index', i);
+            cell.addEventListener('click', handleCellClick);
+            board.appendChild(cell);
+        }
+        gameState = ['', '', '', '', '', '', '', '', ''];
+        gameActive = true;
+        cheatAttempts = 0;
+        lastAIMove = null;
+        currentPlayer = 'X';
+        status.textContent = "YOUR MOVE, RUNNER";
     }
-    
+
+    // Start the game immediately
+    initBoard();
+
     function handleCellClick(e) {
         const clickedCell = e.target;
         const clickedIndex = parseInt(clickedCell.getAttribute('data-index'));
         
-        // If cell already taken or game over, ignore
-        if (gameState[clickedIndex] !== '' || !gameActive) return;
+        if (gameState[clickedIndex] !== '' || !gameActive || currentPlayer !== 'X') return;
         
-        // Player move
-        gameState[clickedIndex] = currentPlayer;
-        clickedCell.textContent = currentPlayer;
-        clickedCell.classList.add(currentPlayer.toLowerCase());
+        makeMove(clickedIndex, 'X');
         
-        // Check if player won
-        if (checkWin()) {
+        if (checkWin('X')) {
             status.textContent = "YOU HACKED THE SYSTEM!";
             gameActive = false;
             return;
         }
         
-        // Check for draw
-        if (!gameState.includes('')) {
+        if (isDraw()) {
             status.textContent = "DRAW. SYSTEM STABLE.";
             gameActive = false;
             return;
         }
         
-        // AI move (cheating)
-        setTimeout(() => makeAIMove(), 500);
+        currentPlayer = 'O';
+        status.textContent = "AI PROCESSING...";
+        setTimeout(makeAIMove, 800);
     }
     
     function makeAIMove() {
         if (!gameActive) return;
         
-        currentPlayer = 'O';
+        // First check if AI can win
+        let move = findWinningMove('O');
         
-        // Check if AI is about to lose
-        const almostWin = findAlmostWin('X'); // Player is about to win
-        const almostLose = findAlmostWin('O'); // AI is about to lose
+        // If not, check if player can win (to block)
+        if (move === -1) move = findWinningMove('X');
         
-        let aiMove;
-        
-        // If AI is about to lose, cheat by changing its last move
-        if (almostLose !== -1 && cheatAttempts < 2) {
-            const prevMove = gameState.lastIndexOf('O');
-            if (prevMove !== -1) {
-                gameState[prevMove] = ''; // Erase last move
-                document.querySelector(`.cell[data-index="${prevMove}"]`).textContent = '';
-                document.querySelector(`.cell[data-index="${prevMove}"]`).classList.remove('o');
+        // If neither, use cheating logic
+        if (move === -1 && cheatAttempts < 2 && lastAIMove !== null) {
+            // Only cheat if we're about to lose and haven't cheated too much
+            const playerAboutToWin = findWinningMove('X');
+            if (playerAboutToWin !== -1) {
+                // Undo last move
+                gameState[lastAIMove] = '';
+                document.querySelector(`.cell[data-index="${lastAIMove}"]`).textContent = '';
+                document.querySelector(`.cell[data-index="${lastAIMove}"]`).classList.remove('o');
                 
-                aiMove = almostLose; // Block player
+                // Make the blocking move instead
+                move = playerAboutToWin;
                 cheatAttempts++;
                 status.textContent = "SYSTEM GLITCH DETECTED...";
+                document.getElementById('status').classList.add('glitch');
+                setTimeout(() => {
+                    document.getElementById('status').classList.remove('glitch');
+                }, 1000);
             }
-        } else {
-            // Otherwise, play normally (or try to win)
-            aiMove = almostWin !== -1 ? almostWin : 
-                     almostLose !== -1 ? almostLose : 
-                     gameState.indexOf('');
         }
         
-        // Make AI move
-        gameState[aiMove] = 'O';
-        const aiCell = document.querySelector(`.cell[data-index="${aiMove}"]`);
-        aiCell.textContent = 'O';
-        aiCell.classList.add('o');
+        // If still no move, pick random
+        if (move === -1) {
+            const emptyCells = gameState.map((cell, index) => cell === '' ? index : -1).filter(index => index !== -1);
+            move = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        }
         
-        // Check if AI won
-        if (checkWin()) {
+        makeMove(move, 'O');
+        lastAIMove = move;
+        
+        if (checkWin('O')) {
             status.textContent = "AI DOMINATES. YOU LOSE.";
             gameActive = false;
             return;
         }
         
-        // Check for draw
-        if (!gameState.includes('')) {
+        if (isDraw()) {
             status.textContent = "DRAW. SYSTEM STABLE.";
             gameActive = false;
             return;
@@ -102,52 +110,46 @@ document.addEventListener('DOMContentLoaded', () => {
         status.textContent = "YOUR MOVE, RUNNER";
     }
     
-    // Check if a player is one move away from winning
-    function findAlmostWin(player) {
+    function makeMove(index, player) {
+        gameState[index] = player;
+        const cell = document.querySelector(`.cell[data-index="${index}"]`);
+        cell.textContent = player;
+        cell.classList.add(player.toLowerCase());
+    }
+    
+    function findWinningMove(player) {
         const winPatterns = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
-            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
-            [0, 4, 8], [2, 4, 6]             // Diagonals
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
         ];
         
         for (const pattern of winPatterns) {
             const [a, b, c] = pattern;
-            // If two in a row and third is empty
             if (gameState[a] === player && gameState[b] === player && gameState[c] === '') return c;
             if (gameState[a] === player && gameState[c] === player && gameState[b] === '') return b;
             if (gameState[b] === player && gameState[c] === player && gameState[a] === '') return a;
         }
-        
         return -1;
     }
     
-    // Check for win
-    function checkWin() {
+    function checkWin(player) {
         const winPatterns = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
-            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
-            [0, 4, 8], [2, 4, 6]             // Diagonals
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
         ];
         
-        for (const pattern of winPatterns) {
-            const [a, b, c] = pattern;
-            if (gameState[a] && gameState[a] === gameState[b] && gameState[a] === gameState[c]) {
-                return true;
-            }
-        }
-        return false;
+        return winPatterns.some(pattern => {
+            return pattern.every(index => {
+                return gameState[index] === player;
+            });
+        });
     }
     
-    // Reset game
-    resetButton.addEventListener('click', () => {
-        gameState = ['', '', '', '', '', '', '', '', ''];
-        gameActive = true;
-        currentPlayer = 'X';
-        cheatAttempts = 0;
-        status.textContent = "YOUR MOVE, RUNNER";
-        document.querySelectorAll('.cell').forEach(cell => {
-            cell.textContent = '';
-            cell.classList.remove('x', 'o');
-        });
-    });
+    function isDraw() {
+        return !gameState.includes('') && !checkWin('X') && !checkWin('O');
+    }
+    
+    resetButton.addEventListener('click', initBoard);
 });
