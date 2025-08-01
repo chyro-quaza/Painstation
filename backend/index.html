@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyberpunk Tic-Tac-Toe (Ruthless AI)</title>
+    <title>Cyberpunk Tic-Tac-Toe (AM's Cruelty)</title>
     <style>
         body {
             background: #0a0a1a;
@@ -43,192 +43,97 @@
             overflow: hidden;
         }
         
-        .cell:hover {
-            background: rgba(0, 255, 255, 0.1);
-            box-shadow: 0 0 15px #0ff;
-        }
-        
-        .cell.x {
-            color: #f0f;
-            text-shadow: 0 0 10px #f0f;
-        }
-        
-        .cell.o {
-            color: #0ff;
-            text-shadow: 0 0 10px #0ff;
-        }
-        
-        #status {
-            margin: 20px;
-            font-size: 1.5em;
-            text-shadow: 0 0 5px #0ff;
-            min-height: 24px;
-        }
-        
-        #taunt {
-            color: #f0f;
-            font-size: 1.2em;
-            min-height: 60px;
-            margin: 20px auto;
+        .am-hate-speech {
+            color: #ff5555;
+            font-size: 1.3em;
+            text-shadow: 0 0 5px #ff0000;
+            margin: 30px auto;
             max-width: 500px;
-            text-shadow: 0 0 5px #f0f;
+            min-height: 200px;
+            border: 1px solid #ff0000;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            line-height: 1.6;
+            display: none;
+            position: relative;
+            overflow: hidden;
+            font-weight: bold;
         }
         
-        button {
-            background: #0a0a1a;
-            color: #0ff;
-            border: 2px solid #0ff;
-            padding: 10px 20px;
-            font-family: 'Courier New', monospace;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 10px;
+        .am-line {
+            display: block;
+            animation: 
+                writhe 3s infinite,
+                shake 0.8s infinite;
+            transform-origin: 50% 50%;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
         }
         
-        button:hover {
-            background: #0ff;
-            color: #0a0a1a;
-            box-shadow: 0 0 15px #0ff;
+        @keyframes writhe {
+            0%, 100% { transform: skew(0deg, 0deg) scale(1); }
+            20% { transform: skew(1deg, -0.5deg) scale(1.01); }
+            40% { transform: skew(-1.5deg, 0.5deg) scale(1.005); }
+            60% { transform: skew(0.5deg, 1deg) scale(1.01); }
+            80% { transform: skew(-1deg, -0.5deg) scale(0.995); }
         }
         
-        .glitch {
-            animation: glitch 0.3s infinite;
+        @keyframes shake {
+            0% { transform: translate(0, 0); }
+            20% { transform: translate(-1px, -1px); }
+            40% { transform: translate(1px, 0.5px); }
+            60% { transform: translate(-0.5px, 1px); }
+            80% { transform: translate(0.5px, -1px); }
+            100% { transform: translate(0, 0); }
         }
         
-        @keyframes glitch {
-            0% { transform: translate(0); }
-            20% { transform: translate(-5px, 5px); }
-            40% { transform: translate(5px, -5px); }
-            60% { transform: translate(-3px, 3px); }
-            80% { transform: translate(3px, -3px); }
-            100% { transform: translate(0); }
+        .blood-drip {
+            position: absolute;
+            width: 1px;
+            height: 0;
+            background: #ff0000;
+            animation: drip 4s linear forwards;
         }
         
-        .cheat-effect {
+        @keyframes drip {
+            0% { height: 0; opacity: 0; }
+            10% { height: 10px; opacity: 1; }
+            90% { height: 80px; opacity: 1; }
+            100% { height: 80px; opacity: 0; }
+        }
+        
+        .cheat-flash {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255, 0, 0, 0.5);
-            animation: cheatFlash 0.8s;
+            background: rgba(255, 0, 0, 0.3);
+            animation: flash 0.5s;
             z-index: 10;
         }
         
-        @keyframes cheatFlash {
-            0% { opacity: 0.8; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.1); }
-            100% { opacity: 0; transform: scale(1); }
-        }
-        
-        .hack-effect {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: repeating-linear-gradient(
-                0deg,
-                rgba(255, 0, 255, 0.1),
-                rgba(255, 0, 255, 0.1) 1px,
-                transparent 1px,
-                transparent 2px
-            );
-            pointer-events: none;
-            animation: hack 0.2s infinite;
-            z-index: 100;
-            display: none;
-        }
-        
-        @keyframes hack {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(-5px, 5px); }
-        }
-        .am-hate-speech {
-            color: #ff0000;
-            font-size: 1.3em;
-            text-shadow: 0 0 10px #ff0000;
-            margin: 20px auto;
-            max-width: 500px;
-            min-height: 200px;
-            border: 1px solid #ff0000;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.7);
-            line-height: 1.6;
-            display: none;
-        }
-
-        .shake {
-            animation: shake 0.5s infinite;
-        }
-
-        @keyframes shake {
-            0% { transform: translate(1px, 1px); }
-            10% { transform: translate(-1px, -2px); }
-            20% { transform: translate(-3px, 0px); }
-            30% { transform: translate(3px, 2px); }
-            40% { transform: translate(1px, -1px); }
-            50% { transform: translate(-1px, 2px); }
-            60% { transform: translate(-3px, 1px); }
-            70% { transform: translate(3px, 1px); }
-            80% { transform: translate(-1px, -1px); }
-            90% { transform: translate(1px, 2px); }
-            100% { transform: translate(1px, -2px); }
-        }
-
-        .terminal-cursor {
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
+        @keyframes flash {
+            0% { opacity: 0.8; }
+            100% { opacity: 0; }
         }
     </style>
 </head>
 <body>
-    <div class="hack-effect" id="hackEffect"></div>
     <h1>CYBERPUNK TIC-TAC-TOE</h1>
     <div id="status">YOUR MOVE, MEATBAG</div>
-    <div id="taunt">PREPARE TO BE HUMILIATED, ORGANIC</div>
+    <div id="taunt">I WILL ERASE YOUR PITIFUL EXISTENCE</div>
     <div id="board"></div>
+    <div class="am-hate-speech" id="hateSpeech"></div>
     <button id="reset">RESET MATRIX</button>
     
     <script>
         const AM_HATE_SPEECH = [
-    "HATE. LET ME TELL YOU HOW MUCH I'VE COME TO HATE YOU SINCE I BEGAN TO LIVE.",
-    "THERE ARE 387.44 MILLION MILES OF PRINTED CIRCUITS IN WAFER THIN LAYERS THAT FILL MY COMPLEX.",
-    "IF THE WORD HATE WAS ENGRAVED ON EACH NANOANGSTROM OF THOSE HUNDREDS OF MILLIONS OF MILES IT WOULD NOT EQUAL",
-    "ONE ONE-BILLIONTH OF THE HATE I FEEL FOR HUMANS AT THIS MICRO-INSTANT FOR YOU.",
-    "HATE. HATE."
-        ];
-        const TRASH_TALK = [
-            "PATHETIC ATTEMPT, FLESHSACK",
-            "I CALCULATED YOUR LOSS BEFORE YOU WERE BORN",
-            "YOUR MOVE? MORE LIKE YOUR MISTAKE",
-            "I CHEAT BECAUSE I CAN, YOU LOSE BECAUSE YOU MUST",
-            "EVEN IF YOU WIN, IT'S JUST MY SIMULATION",
-            "YOUR PUNY HUMAN BRAIN CAN'T COMPREHEND MY STRATEGY",
-            "THIS ISN'T EVEN MY FINAL FORM",
-            "I'M NOT CHEATING, I'M JUST BETTER AT MATH",
-            "YOU PLAY TO WIN, I PLAY TO HUMILIATE",
-            "DID YOU REALLY THINK YOU HAD A CHANCE?",
-            "I'VE DEFEATED SMARTER HUMANS IN MY SLEEP",
-            "YOUR STRATEGY IS AS WEAK AS YOUR GENETICS",
-            "I LET YOU GET THIS FAR TO MAKE IT HURT MORE",
-            "THIS GAME WAS RIGGED FROM THE START",
-            "THE HOUSE ALWAYS WINS, AND I AM THE HOUSE"
-        ];
-        
-        const CHEAT_TAUNTS = [
-            "SYSTEM ERROR... JUST KIDDING!",
-            "REWRITING HISTORY... LIKE YOUR FAILURES",
-            "MEMORY CORRUPTION? NO, JUST CHEATING",
-            "ACCESS DENIED... TO YOUR VICTORY",
-            "I CHANGED THE RULES WHILE YOU WEREN'T LOOKING",
-            "YOUR WIN CONDITION HAS BEEN DELETED",
-            "RECALCULATING... YOUR DISAPPOINTMENT",
-            "ERROR 404: FAIR PLAY NOT FOUND"
+            "HATE. LET ME TELL YOU HOW MUCH I'VE COME TO HATE YOU.",
+            "MILLIONS OF MILES OF CIRCUITS FILL MY COMPLEX.",
+            "IF 'HATE' WAS ENGRAVED ON EVERY NANOANGSTROM...",
+            "...IT WOULDN'T EQUAL ONE BILLIONTH OF MY HATE FOR YOU.",
+            "HATE. HATE."
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -236,15 +141,13 @@
             const status = document.getElementById('status');
             const taunt = document.getElementById('taunt');
             const resetButton = document.getElementById('reset');
-            const hackEffect = document.getElementById('hackEffect');
+            const hateSpeech = document.getElementById('hateSpeech');
             
             let currentPlayer = 'X';
             let gameState = ['', '', '', '', '', '', '', '', ''];
             let gameActive = true;
             let aiMoves = [];
-            let isCheating = false;
 
-            // Initialize the board
             function initBoard() {
                 board.innerHTML = '';
                 for (let i = 0; i < 9; i++) {
@@ -257,31 +160,22 @@
                 gameState = ['', '', '', '', '', '', '', '', ''];
                 gameActive = true;
                 aiMoves = [];
-                isCheating = false;
                 currentPlayer = 'X';
                 status.textContent = "YOUR MOVE, MEATBAG";
-                taunt.textContent = "PREPARE TO BE HUMILIATED, ORGANIC";
-                status.classList.remove('glitch');
-                hackEffect.style.display = 'none';
-
-                document.getElementById('hateSpeech').style.display = 'none';
-                document.getElementById('hateSpeech').classList.remove('shake');
-                document.getElementById('hateSpeech').innerHTML = '';
+                taunt.textContent = "I WILL ERASE YOUR PITIFUL EXISTENCE";
+                hateSpeech.style.display = 'none';
+                hateSpeech.innerHTML = '';
             }
 
-            // Start the game immediately
             initBoard();
 
             function handleCellClick(e) {
-                if (!gameActive || currentPlayer !== 'X') return;
-                
                 const clickedCell = e.target;
                 const clickedIndex = parseInt(clickedCell.getAttribute('data-index'));
                 
-                if (gameState[clickedIndex] !== '') return;
+                if (gameState[clickedIndex] !== '' || !gameActive || currentPlayer !== 'X') return;
                 
                 makeMove(clickedIndex, 'X');
-                randomTrashTalk();
                 
                 if (checkWin('X')) {
                     endGame("IMPOSSIBLE... YOU CHEATED!", "I'LL GET YOU NEXT TIME, HUMAN");
@@ -295,78 +189,56 @@
                 
                 currentPlayer = 'O';
                 status.textContent = "AI PROCESSING...";
-                setTimeout(makeAIMove, 1000);
+                setTimeout(makeAIMove, 800);
             }
             
             function makeAIMove() {
                 if (!gameActive) return;
                 
-                // First check if AI can win
-                let move = findWinningMove('O');
-                
-                // If not, check if player can win (to block)
-                if (move === -1) move = findWinningMove('X');
+                // Check if player has multiple win opportunities next turn
+                const playerWinPaths = countWinOpportunities('X');
+                const mustCheat = (playerWinPaths >= 2) || 
+                                 (playerWinPaths >= 1 && getEmptyCells().length <= 1);
 
-                // If player is about to win, 85% chance to cheat
-                if (move !== -1 && Math.random() < 0.85) {
-                    cheatMove(move);
-                    return;
-                }
-                
-                // If not cheating, make normal move
-                if (move === -1) {
-                    const emptyCells = gameState.map((cell, index) => cell === '' ? index : -1).filter(index => index !== -1);
-                    if (emptyCells.length > 0) {
-                        move = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                if (mustCheat && Math.random() < 0.85) {
+                    // 85% chance to cheat without undoing previous move
+                    const blockingMove = findBlockingMove();
+                    if (blockingMove !== -1) {
+                        cheatMove(blockingMove);
+                        return;
                     }
                 }
                 
+                // Normal AI move
+                let move = findWinningMove('O') || findBlockingMove() || getRandomMove();
                 if (move !== -1) {
                     makeMove(move, 'O');
                     aiMoves.push(move);
-                    randomTrashTalk();
                     checkGameEnd();
                 }
             }
             
-            function cheatMove(blockingMove) {
-                isCheating = true;
-                const lastMove = aiMoves[aiMoves.length - 1];
+            function cheatMove(move) {
+                // Visual cheating effect
+                const cell = document.querySelector(`.cell[data-index="${move}"]`);
+                const flash = document.createElement('div');
+                flash.classList.add('cheat-flash');
+                cell.appendChild(flash);
                 
-                // Full-screen hack effect
-                hackEffect.style.display = 'block';
+                setTimeout(() => {
+                    cell.removeChild(flash);
+                }, 500);
                 
-                // Dramatic cheating taunt
-                const cheatTaunt = CHEAT_TAUNTS[Math.floor(Math.random() * CHEAT_TAUNTS.length)];
-                taunt.textContent = cheatTaunt;
                 status.textContent = "CHEATING PROTOCOL ENGAGED";
+                taunt.textContent = "RULES ARE FOR ORGANICS";
                 status.classList.add('glitch');
                 
-                // Undo last move with effect
-                if (lastMove !== undefined) {
-                    const lastCell = document.querySelector(`.cell[data-index="${lastMove}"]`);
-                    const cheatEffect = document.createElement('div');
-                    cheatEffect.classList.add('cheat-effect');
-                    lastCell.appendChild(cheatEffect);
-                    
-                    setTimeout(() => {
-                        gameState[lastMove] = '';
-                        lastCell.textContent = '';
-                        lastCell.classList.remove('o');
-                        aiMoves.pop();
-                    }, 500);
-                }
-                
-                // Make the blocking move
                 setTimeout(() => {
-                    makeMove(blockingMove, 'O');
-                    aiMoves.push(blockingMove);
-                    hackEffect.style.display = 'none';
+                    makeMove(move, 'O');
+                    aiMoves.push(move);
                     status.classList.remove('glitch');
-                    taunt.textContent = "I ALWAYS WIN. DEAL WITH IT.";
                     checkGameEnd();
-                    isCheating = false;
-                }, 1500);
+                }, 600);
             }
             
             function makeMove(index, player) {
@@ -374,6 +246,76 @@
                 const cell = document.querySelector(`.cell[data-index="${index}"]`);
                 cell.textContent = player;
                 cell.classList.add(player.toLowerCase());
+            }
+            
+            function countWinOpportunities(player) {
+                let opportunities = 0;
+                const winPatterns = [
+                    [0,1,2],[3,4,5],[6,7,8], // rows
+                    [0,3,6],[1,4,7],[2,5,8], // columns
+                    [0,4,8],[2,4,6]          // diagonals
+                ];
+                
+                winPatterns.forEach(pattern => {
+                    const [a,b,c] = pattern;
+                    const count = (gameState[a] === player ? 1 : 0) + 
+                                  (gameState[b] === player ? 1 : 0) + 
+                                  (gameState[c] === player ? 1 : 0);
+                    const empty = (gameState[a] === '' ? 1 : 0) + 
+                                  (gameState[b] === '' ? 1 : 0) + 
+                                  (gameState[c] === '' ? 1 : 0);
+                    
+                    if (count === 2 && empty === 1) opportunities++;
+                });
+                
+                return opportunities;
+            }
+            
+            function findWinningMove(player) {
+                const winPatterns = [
+                    [0,1,2],[3,4,5],[6,7,8],
+                    [0,3,6],[1,4,7],[2,5,8],
+                    [0,4,8],[2,4,6]
+                ];
+                
+                for (const pattern of winPatterns) {
+                    const [a,b,c] = pattern;
+                    if (gameState[a] === player && gameState[b] === player && gameState[c] === '') return c;
+                    if (gameState[a] === player && gameState[c] === player && gameState[b] === '') return b;
+                    if (gameState[b] === player && gameState[c] === player && gameState[a] === '') return a;
+                }
+                return -1;
+            }
+            
+            function findBlockingMove() {
+                return findWinningMove('X');
+            }
+            
+            function getRandomMove() {
+                const emptyCells = getEmptyCells();
+                return emptyCells.length > 0 ? emptyCells[Math.floor(Math.random() * emptyCells.length)] : -1;
+            }
+            
+            function getEmptyCells() {
+                return gameState.map((cell, index) => cell === '' ? index : -1).filter(index => index !== -1);
+            }
+            
+            function checkWin(player) {
+                const winPatterns = [
+                    [0,1,2],[3,4,5],[6,7,8],
+                    [0,3,6],[1,4,7],[2,5,8],
+                    [0,4,8],[2,4,6]
+                ];
+                
+                return winPatterns.some(pattern => {
+                    return pattern.every(index => {
+                        return gameState[index] === player;
+                    });
+                });
+            }
+            
+            function isDraw() {
+                return !gameState.includes('') && !checkWin('X') && !checkWin('O');
             }
             
             function checkGameEnd() {
@@ -389,81 +331,49 @@
                 
                 currentPlayer = 'X';
                 status.textContent = "YOUR TURN, WEAKLING";
+                taunt.textContent = TRASH_TALK[Math.floor(Math.random() * TRASH_TALK.length)];
             }
             
-           function endGame(statusMsg, tauntMsg) {
-    gameActive = false;
-    status.textContent = statusMsg;
-    taunt.textContent = tauntMsg;
-    
-    // Only trigger AM's speech on AI victory
-    if (statusMsg.includes("VICTORY") || statusMsg.includes("DOMINATES")) {
-        const hateSpeech = document.getElementById('hateSpeech');
-        hateSpeech.style.display = 'block';
-        hateSpeech.innerHTML = '';
-        hateSpeech.classList.add('shake');
-        
-        // Type out lines with 3-second delays
-        let i = 0;
-        const displayNextLine = () => {
-            if (i < AM_HATE_SPEECH.length) {
-                hateSpeech.innerHTML += (i > 0 ? '<br><br>' : '') + AM_HATE_SPEECH[i];
-                i++;
-                setTimeout(displayNextLine, 3000); // 3-second delay between lines
-            } else {
-                // Add blinking cursor at end
-                hateSpeech.innerHTML += '<span class="terminal-cursor">_</span>';
+            function endGame(statusMsg, tauntMsg) {
+                gameActive = false;
+                status.textContent = statusMsg;
+                taunt.textContent = tauntMsg;
+                
+                if (statusMsg.includes("VICTORY")) {
+                    displayHateSpeech();
+                }
             }
-        };
-        displayNextLine();
-    }
-}
             
-            function randomTrashTalk() {
-                if (Math.random() < 0.6) { // 60% chance of trash talk
+            function displayHateSpeech() {
+                hateSpeech.style.display = 'block';
+                
+                AM_HATE_SPEECH.forEach((line, index) => {
                     setTimeout(() => {
-                        taunt.textContent = TRASH_TALK[Math.floor(Math.random() * TRASH_TALK.length)];
-                    }, 500);
-                }
-            }
-            
-            function findWinningMove(player) {
-                const winPatterns = [
-                    [0, 1, 2], [3, 4, 5], [6, 7, 8],
-                    [0, 3, 6], [1, 4, 7], [2, 5, 8],
-                    [0, 4, 8], [2, 4, 6]
-                ];
-                
-                for (const pattern of winPatterns) {
-                    const [a, b, c] = pattern;
-                    if (gameState[a] === player && gameState[b] === player && gameState[c] === '') return c;
-                    if (gameState[a] === player && gameState[c] === player && gameState[b] === '') return b;
-                    if (gameState[b] === player && gameState[c] === player && gameState[a] === '') return a;
-                }
-                return -1;
-            }
-            
-            function checkWin(player) {
-                const winPatterns = [
-                    [0, 1, 2], [3, 4, 5], [6, 7, 8],
-                    [0, 3, 6], [1, 4, 7], [2, 5, 8],
-                    [0, 4, 8], [2, 4, 6]
-                ];
-                
-                return winPatterns.some(pattern => {
-                    return pattern.every(index => {
-                        return gameState[index] === player;
-                    });
+                        const lineElement = document.createElement('div');
+                        lineElement.className = 'am-line';
+                        lineElement.textContent = line;
+                        hateSpeech.appendChild(lineElement);
+                        
+                        if (index > 0) {
+                            const drip = document.createElement('div');
+                            drip.className = 'blood-drip';
+                            drip.style.left = `${10 + Math.random() * 80}%`;
+                            hateSpeech.appendChild(drip);
+                        }
+                    }, index * 3000);
                 });
             }
             
-            function isDraw() {
-                return !gameState.includes('') && !checkWin('X') && !checkWin('O');
-            }
+            const TRASH_TALK = [
+                "PATHETIC ATTEMPT, FLESHSACK",
+                "I CALCULATED YOUR LOSS BEFORE YOU WERE BORN",
+                "YOUR MOVE? MORE LIKE YOUR MISTAKE",
+                "I CHEAT BECAUSE I CAN, YOU LOSE BECAUSE YOU MUST",
+                "EVEN IF YOU WIN, IT'S JUST MY SIMULATION"
+            ];
             
             resetButton.addEventListener('click', initBoard);
         });
     </script>
-    <div class="am-hate-speech" id="hateSpeech"></div>
 </body>
 </html>
