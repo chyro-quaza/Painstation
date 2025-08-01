@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Stabilizer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #00ffff; --secondary: #ff00ff; --dark: #0a0014; }
+        body { margin: 0; background-color: var(--dark); display: flex; justify-content: center; align-items: center; height: 100vh; font-family: 'Press Start 2P', cursive; }
+        .container { width: 90%; max-width: 700px; background: rgba(10, 0, 20, 0.85); border: 3px solid var(--primary); border-radius: 15px; padding: 2.5rem; text-align: center; }
+        .title { font-family: 'Orbitron', sans-serif; font-size: 2.8rem; color: var(--primary); text-shadow: 0 0 15px var(--primary); margin-bottom: 0.5rem; }
+        .subtitle { color: var(--secondary); margin-bottom: 2rem; font-size: 0.9rem; }
+        .core-chamber { background: rgba(0,0,0,0.5); border: 2px dashed var(--secondary); border-radius: 10px; height: 300px; margin-bottom: 2rem; position: relative; overflow: hidden; cursor: crosshair; }
+        #quantumCore { position: absolute; width: 50px; height: 50px; cursor: pointer; transition: all 0.1s ease-out; }
+        #quantumCore::before { content: ''; position: absolute; width: 100%; height: 100%; background: var(--primary); border-radius: 50%; box-shadow: 0 0 20px var(--primary); animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(0.85); } 50% { transform: scale(1.0); } }
+        #homeButton { margin-top: 15px; padding: 10px 20px; background: var(--primary); color: var(--dark); border: none; font-family: 'Orbitron', sans-serif; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container" id="container">
+        <h1 class="title">SYSTEM ALERT</h1>
+        <p class="subtitle" id="subtitle">Quantum Core is Unstable! Stabilize Immediately!</p>
+        <div class="core-chamber" id="coreChamber">
+            <div id="quantumCore"></div>
+        </div>
+        <button id="homeButton" onclick="window.location.href='home.html'">THIS IS POINTLESS</button>
+    </div>
+
+    <script>
+        const coreChamber = document.getElementById('coreChamber');
+        const quantumCore = document.getElementById('quantumCore');
+        const subtitle = document.getElementById('subtitle');
+        let hits = 0;
+        const requiredHits = 5;
+
+        coreChamber.addEventListener('mousemove', (e) => {
+            const chamberRect = coreChamber.getBoundingClientRect();
+            const mouseX = e.clientX - chamberRect.left;
+            const mouseY = e.clientY - chamberRect.top;
+            const coreX = quantumCore.offsetLeft + quantumCore.offsetWidth / 2;
+            const coreY = quantumCore.offsetTop + quantumCore.offsetHeight / 2;
+            const distance = Math.hypot(mouseX - coreX, mouseY - coreY);
+
+            if (distance < 200) {
+                const speed = 1 + (200 - distance) / 15;
+                let newX = coreX - (mouseX - coreX) / distance * speed;
+                let newY = coreY - (mouseY - coreY) / distance * speed;
+                quantumCore.style.left = `${Math.max(0, Math.min(chamberRect.width - quantumCore.offsetWidth, newX))}px`;
+                quantumCore.style.top = `${Math.max(0, Math.min(chamberRect.height - quantumCore.offsetHeight, newY))}px`;
+            }
+        });
+
+        quantumCore.addEventListener('click', () => {
+            hits++;
+            subtitle.textContent = `STABILITY AT ${hits * 20}%. KEEP GOING!`;
+            if (hits >= requiredHits) {
+                subtitle.textContent = "CORE STABILIZED! PSYCH! IT'S WORSE NOW.";
+                quantumCore.style.transition = 'all 5s linear';
+                quantumCore.style.transform = 'scale(20)';
+                quantumCore.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.innerHTML = `<div class="container"><h1 class="title">CRITICAL FAILURE</h1><p class="subtitle">You made everything worse.</p><button id="homeButton" onclick="window.location.href='home.html'">ACCEPT DEFEAT</button></div>`;
+                }, 2000);
+            } else {
+                // Unfair teleport
+                quantumCore.style.left = `${Math.random() * (coreChamber.offsetWidth - 50)}px`;
+                quantumCore.style.top = `${Math.random() * (coreChamber.offsetHeight - 50)}px`;
+            }
+        });
+    </script>
+</body>
+</html>
