@@ -51,6 +51,7 @@ Screenshots:
 
 Workflow Diagram:  
 Workflow workflow.png Basic system architecture showing user input and AI response patterns  
+![alt text](wf.png)
 
 
 Team Contributions  
