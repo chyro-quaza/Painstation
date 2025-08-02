@@ -45,8 +45,8 @@ Project Documentation
 Screenshots:  
 
 ![alt text](ss1.png)
-![alt text](<Screenshot 2025-08-02 074321-1.png>) 
-![alt text](<Screenshot 2025-08-02 073018-1.png>) 
+![alt text](ss2.png) 
+![alt text](ss3.png) 
 
 
 Workflow Diagram:  
