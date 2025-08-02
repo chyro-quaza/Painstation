@@ -53,6 +53,11 @@ Workflow Diagram:
 Workflow workflow.png Basic system architecture showing user input and AI response patterns  
 ![alt text](wf.png)
 
+Full Gameplay Demo 
+link : https://drive.google.com/file/d/1vvDwFMqqbARRu1Mf-hdnbTDnwqfqGYzO/view?usp=drive_link
+
+
+
 
 Team Contributions  
 Vishnu Sarang: Frontend + Presentation 
