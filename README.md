@@ -34,7 +34,7 @@ Technologies Used:
 
 
 Implementation  
-git clone https://github.com/Jet2Holiday/PainStation.git  
+git clone https://github.com/chyro-quaza/Painstation
 cd PainStation  
 npm install  
 npm start   
