@@ -48,7 +48,7 @@
             font-family: 'Orbitron', sans-serif;
             color: var(--red);
             font-size: 3rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             text-shadow: 
                 0 0 10px var(--red),
                 0 0 20px rgba(255,42,109,0.5);
@@ -63,6 +63,25 @@
             80% { transform: translate(3px, -3px); }
             100% { transform: translate(0); }
         }
+        
+        .troll-message {
+            font-family: 'Press Start 2P', cursive;
+            color: var(--red);
+            font-size: 1.5rem;
+            text-shadow: 0 0 8px var(--red);
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.3s;
+            width: 100%;
+            text-align: center;
+            height: 2em; /* Reserve space to prevent layout shifts */
+            margin-bottom: 1rem;
+        }
+
+        .troll-message.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
 
         .captcha-box {
             background: rgba(1,1,43,0.7);
@@ -75,16 +94,17 @@
             overflow: hidden;
         }
 
-        .checkbox-container {
+        .clickable-container {
             position: absolute;
-            transition: all 0.1s;
+            transition: all 0.1s ease-out;
             z-index: 10;
         }
 
-        .checkbox-label {
+        .clickable-target {
             display: flex;
             align-items: center;
-            font-size: 1.2rem;
+            justify-content: center;
+            font-size: 1.1rem;
             color: var(--text);
             cursor: pointer;
             padding: 15px 20px;
@@ -92,46 +112,7 @@
             border-radius: 5px;
             border: 2px solid var(--red);
             white-space: nowrap;
-        }
-
-        .checkbox-label input {
-            margin-right: 12px;
-            cursor: pointer;
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            border: 2px solid var(--blue);
-            border-radius: 3px;
-            position: relative;
-        }
-
-        .checkbox-label input:checked::after {
-            content: '✓';
-            position: absolute;
-            color: var(--blue);
-            font-size: 16px;
-            left: 1px;
-            top: -3px;
-        }
-
-        .troll-message {
-            position: absolute;
-            font-family: 'Press Start 2P', cursive;
-            color: var(--red);
-            font-size: 1.5rem;
-            text-shadow: 0 0 8px var(--red);
-            opacity: 0;
-            transform: scale(0.5);
-            transition: all 0.3s;
-            width: 100%;
-            text-align: center;
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        .troll-message.visible {
-            opacity: 1;
-            transform: scale(1);
+            min-width: 250px;
         }
 
         .submit-btn {
@@ -203,15 +184,16 @@
 <body>
     <div class="captcha-container" id="mainContainer">
         <h1 class="captcha-title">PAINSTATION</h1>
-        <p style="color: var(--blue); margin-bottom: 2rem;">AUTHENTICATION REQUIRED</p>
+        <p style="color: var(--blue); margin-bottom: 0.5rem;">AUTHENTICATION REQUIRED</p>
         
+        <div class="troll-message" id="trollMessage"></div>
+
         <div class="captcha-box" id="captchaBox">
-            <div class="checkbox-container" id="checkboxContainer">
-                <label class="checkbox-label" id="checkboxLabel">
-                    <input type="checkbox" id="painCheckbox"> I AM A ROBOT
-                </label>
+            <div class="clickable-container" id="clickableContainer">
+                <div class="clickable-target" id="clickableTarget">
+                    CLICKS REMAINING: <span id="clickCounter">5</span>
+                </div>
             </div>
-            <div class="troll-message" id="trollMessage"></div>
         </div>
         
         <button class="submit-btn" id="submitBtn">VERIFY IDENTITY</button>
@@ -219,51 +201,77 @@
     </div>
 
     <script>
-        const checkbox = document.getElementById('painCheckbox');
-        const checkboxLabel = document.getElementById('checkboxLabel');
-        const checkboxContainer = document.getElementById('checkboxContainer');
+        const clickableContainer = document.getElementById('clickableContainer');
+        const clickableTarget = document.getElementById('clickableTarget');
+        const clickCounter = document.getElementById('clickCounter');
         const trollMessage = document.getElementById('trollMessage');
         const captchaBox = document.getElementById('captchaBox');
         const submitBtn = document.getElementById('submitBtn');
         const painCounter = document.getElementById('painCounter');
         const mainContainer = document.getElementById('mainContainer');
         
-        const trollMessages = ["NICE TRY!", "TOO SLOW!", "ERROR: SKILL NOT FOUND", "HAHAHA!", "GIVE UP ALREADY!"];
-        let painLevel = 0;
+        const trollMessages = ["NICE TRY!", "TOO SLOW!", "ERROR: SKILL NOT FOUND", "HAHAHA!", "GIVE UP ALREADY!", "THE PAIN NEVER STOPS"];
+        
+        // Retrieve painLevel from localStorage, or start at 0 if it doesn't exist.
+        let painLevel = parseInt(localStorage.getItem('totalPainLevel') || '0');
+        
         let successfulAttempts = 0;
         const requiredAttempts = 5;
+        let gameWon = false;
         
-        moveCheckbox();
+        // Initialize counter text
+        clickCounter.textContent = requiredAttempts;
+        // Update the pain counter on initial page load
+        updatePainCounter();
+
+        moveTarget();
         
         const moveInterval = setInterval(() => {
-            if(!checkbox.checked) moveCheckbox();
+            if (!submitBtn.disabled) { // Stop all activity once validation starts
+                moveTarget();
+            } else {
+                clearInterval(moveInterval);
+            }
         }, 1800);
         
-        checkboxContainer.addEventListener('mouseenter', () => {
-            if(!checkbox.checked) {
-                moveCheckbox();
+        clickableTarget.addEventListener('mouseenter', () => {
+            if(!gameWon) {
+                moveTarget();
                 showTrollMessage();
                 increasePain();
             }
         });
+
+        // New listener for post-win pain
+        captchaBox.addEventListener('mouseenter', () => {
+            // Only trigger this extra pain after the clicks are done but before validation starts
+            if (gameWon && !submitBtn.disabled) {
+                increasePain();
+                showTrollMessage();
+            }
+        });
         
-        checkbox.addEventListener('click', (e) => {
-            e.preventDefault(); // Prevent default checking
-            if(checkboxContainer.style.transition !== 'none') {
-                successfulAttempts++;
-                painLevel += 10;
-                updatePainCounter();
-                
-                if(successfulAttempts >= requiredAttempts) {
-                    checkbox.checked = true;
-                    submitBtn.classList.add('active');
-                    showTrollMessage("FINE... YOU WIN THIS TIME", true);
-                    clearInterval(moveInterval);
-                    checkboxContainer.style.animation = 'none';
-                } else {
-                    showTrollMessage(`${requiredAttempts - successfulAttempts} MORE TO GO!`);
-                    setTimeout(() => moveCheckbox(), 100);
-                }
+        clickableTarget.addEventListener('click', (e) => {
+            if (gameWon) return;
+
+            e.preventDefault();
+            successfulAttempts++;
+            painLevel += 10;
+            updatePainCounter();
+            localStorage.setItem('totalPainLevel', painLevel.toString());
+            
+            const remainingAttempts = requiredAttempts - successfulAttempts;
+            clickCounter.textContent = remainingAttempts;
+
+            if (remainingAttempts <= 0) {
+                gameWon = true;
+                submitBtn.classList.add('active');
+                // The final success message will now persist
+                showTrollMessage("FINE... YOU WIN THIS TIME", true, true);
+                clickableContainer.style.display = 'none'; // Hide the button
+            } else {
+                showTrollMessage(`${remainingAttempts} MORE TO GO!`);
+                setTimeout(() => moveTarget(), 100);
             }
         });
         
@@ -271,7 +279,7 @@
             if (!submitBtn.classList.contains('active')) return;
 
             submitBtn.textContent = "VERIFYING...";
-            submitBtn.disabled = true;
+            submitBtn.disabled = true; // This will stop the intervals and mouseenter events
             submitBtn.style.animation = "glitch 0.5s infinite";
             
             setTimeout(() => {
@@ -281,12 +289,15 @@
                     submitBtn.textContent = "ACCESS GRANTED";
                     submitBtn.style.background = 'var(--blue)';
                     
-                    // Redirect to the main Misery OS home page
+                    // On success, we can choose to reset the pain for the next session, or let it grow forever.
+                    // Let's reset it for now, so the user feels a fleeting sense of accomplishment.
+                    localStorage.removeItem('totalPainLevel');
+
                     setTimeout(() => {
                         window.location.href = "home.html";
                     }, 1500);
                 } else {
-                    // Failure! Show an access denied message.
+                    // Failure! Show an access denied message. The pain level is already saved.
                     document.body.innerHTML = `<div class="captcha-container access-denied">
                                                   <h1>ACCESS DENIED</h1>
                                                   <p>> AUTHENTICATION FAILED. SYSTEM INTEGRITY COMPROMISED.</p>
@@ -297,24 +308,30 @@
             }, 3000);
         });
         
-        function moveCheckbox() {
+        function moveTarget() {
+            if (gameWon) return; // Stop moving the container if the game is won
             const boxRect = captchaBox.getBoundingClientRect();
-            const labelRect = checkboxLabel.getBoundingClientRect();
-            const maxX = boxRect.width - labelRect.width - 20;
-            const maxY = boxRect.height - labelRect.height - 20;
-            checkboxContainer.style.left = `${10 + Math.floor(Math.random() * maxX)}px`;
-            checkboxContainer.style.top = `${10 + Math.floor(Math.random() * maxY)}px`;
+            const targetRect = clickableTarget.getBoundingClientRect();
+            const maxX = boxRect.width - targetRect.width - 20;
+            const maxY = boxRect.height - targetRect.height - 20;
+            clickableContainer.style.left = `${10 + Math.floor(Math.random() * maxX)}px`;
+            clickableContainer.style.top = `${10 + Math.floor(Math.random() * maxY)}px`;
         }
         
-        function showTrollMessage(customMessage, isSuccess = false) {
+        function showTrollMessage(customMessage, isSuccess = false, persist = false) {
             trollMessage.textContent = customMessage || trollMessages[Math.floor(Math.random() * trollMessages.length)];
             trollMessage.style.color = isSuccess ? 'var(--blue)' : 'var(--red)';
             trollMessage.classList.add('visible');
-            setTimeout(() => trollMessage.classList.remove('visible'), 1500);
+
+            if (!persist) {
+                setTimeout(() => trollMessage.classList.remove('visible'), 1500);
+            }
         }
         
         function increasePain() {
             painLevel += 5;
+            // Save the new pain level to localStorage every time it increases
+            localStorage.setItem('totalPainLevel', painLevel.toString());
             updatePainCounter();
         }
         

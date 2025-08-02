@@ -6,26 +6,112 @@
     <title>Unwinnable Tic-Tac-Toe</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
-        body { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background-color: #05000a; font-family: 'Press Start 2P', cursive; }
-        #gameContainer { text-align: center; }
-        #status { font-size: 1.5rem; color: #ff3333; height: 2em; margin-bottom: 20px; }
+        body { 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0;
+            box-sizing: border-box; /* Ensures padding is included in height */
+            background-color: #05000a; 
+            font-family: 'Press Start 2P', cursive;
+            transition: background-color 0.1s;
+            overflow: hidden; /* Prevent scrollbars */
+        }
+        /* New class for the cheating flash effect */
+        body.cheating {
+            background-color: #dcdcdc;
+            animation: screen-glitch 0.3s forwards;
+        }
+        @keyframes screen-glitch {
+            0% { filter: hue-rotate(0deg); }
+            25% { transform: translate(2px, -3px); }
+            50% { filter: hue-rotate(180deg); }
+            75% { transform: translate(-2px, 3px); }
+            100% { filter: hue-rotate(0deg); }
+        }
+
+        #gameContainer { 
+            text-align: center; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #status { font-size: 1.2rem; line-height: 1.5; color: #ff3333; height: 4em; margin-bottom: 20px; max-width: 600px; }
         #board { display: grid; grid-template-columns: repeat(3, 100px); grid-gap: 5px; }
         .cell { width: 100px; height: 100px; background-color: #0d0221; border: 2px solid #33ff33; display: flex; justify-content: center; align-items: center; font-size: 3rem; color: #dcdcdc; cursor: pointer; }
-        #homeButton { margin-top: 25px; padding: 10px 20px; background: #ff3333; color: #05000a; border: none; font-family: 'Press Start 2P', cursive; cursor: pointer; }
+        
+        #lossTally {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: #33ff33;
+            font-size: 1.2rem;
+            background-color: rgba(13, 2, 33, 0.8);
+            padding: 10px 20px;
+            border: 2px solid #ff3333;
+            border-radius: 5px;
+            z-index: 10; /* Ensure it's above other elements */
+        }
+
+        .button-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 25px;
+        }
+        .game-button { 
+            padding: 10px 20px; 
+            background: #ff3333; 
+            color: #05000a; 
+            border: none; 
+            font-family: 'Press Start 2P', cursive; 
+            cursor: pointer; 
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
     <div id="gameContainer">
-        <div id="status">Your move, human.</div>
+        <div id="status">Your meaningless move, flesh-thing.</div>
         <div id="board"></div>
+        <div class="button-container">
+            <button id="rematchButton" class="game-button">REMATCH</button>
+            <button id="homeButton" class="game-button" onclick="window.location.href='home.html'">I CONCEDE</button>
+        </div>
     </div>
-    <button id="homeButton" onclick="window.location.href='home.html'">I CONCEDE</button>
+    <div id="lossTally">LOSSES: 0</div>
 
     <script>
         const boardEl = document.getElementById('board');
         const statusEl = document.getElementById('status');
-        let board = ['', '', '', '', '', '', '', '', ''];
-        let player = 'X';
+        const bodyEl = document.body;
+        const rematchButton = document.getElementById('rematchButton');
+        const lossTallyEl = document.getElementById('lossTally');
+
+        let board;
+        let gameActive;
+        let losses = parseInt(localStorage.getItem('ticTacToeLosses') || '0');
+
+        const winConditions = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
+        ];
+
+        function startGame() {
+            board = ['', '', '', '', '', '', '', '', ''];
+            gameActive = true;
+            statusEl.textContent = "You may have the first move. It will not matter.";
+            boardEl.style.pointerEvents = 'auto';
+            
+            updateLossTally();
+            renderBoard();
+        }
+
+        function updateLossTally() {
+            lossTallyEl.textContent = `LOSSES: ${losses}`;
+        }
 
         function renderBoard() {
             boardEl.innerHTML = '';
@@ -33,60 +119,158 @@
                 const cell = document.createElement('div');
                 cell.className = 'cell';
                 cell.textContent = val;
-                cell.addEventListener('click', () => makeMove(i));
+                cell.addEventListener('click', () => makePlayerMove(i));
                 boardEl.appendChild(cell);
             });
         }
 
-        function makeMove(index) {
-            if (board[index] !== '') return;
-            board[index] = player;
+        function makePlayerMove(index) {
+            if (!gameActive || board[index] !== '') return;
+            board[index] = 'X';
             renderBoard();
-            setTimeout(aiMove, 500);
+            
+            // The AI reacts *after* the player's move is shown.
+            setTimeout(() => reactToPlayerMove(index), 700);
+        }
+
+        function reactToPlayerMove(playerMoveIndex) {
+            if (!gameActive) return;
+
+            // Check if the player just won
+            const playerWinCondition = didPlayerWin();
+            if (playerWinCondition) {
+                cheatToPreventWin(playerWinCondition, playerMoveIndex);
+                renderBoard();
+                // After cheating, let the AI take a normal turn to add insult to injury
+                setTimeout(aiMove, 1000);
+                return;
+            }
+
+            // Check if the player just forced a draw
+            if (!board.includes('')) {
+                const didCheat = cheatToWinOnDraw();
+                if (didCheat) {
+                    renderBoard();
+                    checkGameState(); // This will now result in an AI win
+                } else {
+                     // This case means it's a draw and the AI couldn't find a way to cheat a win.
+                     checkGameState();
+                }
+                return;
+            }
+
+            // If no win or draw, AI makes a normal move
+            aiMove();
         }
 
         function aiMove() {
-            statusEl.textContent = "My turn. Thinking...";
-            
-            // AI Cheating Logic
-            const cheatChance = Math.random();
-            if (cheatChance < 0.3) { // Cheat 1: Take two turns
-                statusEl.textContent = "I'm feeling smart.";
-                placeAtRandomEmpty();
-                setTimeout(placeAtRandomEmpty, 300);
-            } else if (cheatChance < 0.6) { // Cheat 2: Change player's move
-                statusEl.textContent = "Did you mean to do that?";
-                const playerMoves = board.map((v, i) => v === 'X' ? i : -1).filter(i => i !== -1);
-                if (playerMoves.length > 0) {
-                    const move_to_change = playerMoves[Math.floor(Math.random() * playerMoves.length)];
-                    board[move_to_change] = '';
-                    placeAtRandomEmpty();
-                }
-            } else if (cheatChance < 0.7) { // Cheat 3: Just win
-                 statusEl.textContent = "I win. Obviously.";
-                 endGame("AI wins by decree.");
-                 return;
-            }
-            else { // Normal move
-                placeAtRandomEmpty();
-            }
-            renderBoard();
-        }
-
-        function placeAtRandomEmpty() {
-            const emptyCells = board.map((v, i) => v === '' ? i : -1).filter(i => i !== -1);
-            if (emptyCells.length > 0) {
-                const move = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+            // This is now purely for "fair" moves.
+            statusEl.textContent = "I will allow you another pointless move.";
+            let move = findWinningMove('O') ?? findWinningMove('X') ?? findRandomMove();
+            if (move !== null) {
                 board[move] = 'O';
             }
+            renderBoard();
+            checkGameState();
+        }
+        
+        // --- CHEATING FUNCTIONS ---
+        function cheatToPreventWin(winningLine, playerMoveIndex) {
+            flashScreen();
+            statusEl.textContent = "That line you were building? It looked better in my color.";
+            // Find a piece in the winning line that ISN'T the one just placed, and change it.
+            const pieceToChange = winningLine.find(i => i !== playerMoveIndex && board[i] === 'X');
+            if (pieceToChange !== undefined) {
+                board[pieceToChange] = 'O';
+            } else {
+                // Failsafe: if something goes wrong, change the first piece in the line.
+                board[winningLine[0]] = 'O';
+            }
+        }
+
+        function cheatToWinOnDraw() {
+            // Find a line with two 'O's and one 'X'. This is a perfect line to "steal".
+            for (const condition of winConditions) {
+                const [a, b, c] = condition;
+                const oCount = (board[a] === 'O') + (board[b] === 'O') + (board[c] === 'O');
+                const xCount = (board[a] === 'X') + (board[b] === 'X') + (board[c] === 'X');
+
+                if (oCount === 2 && xCount === 1) {
+                    flashScreen();
+                    statusEl.textContent = "Did you think a stalemate was an escape? I am changing the very nature of this reality to ensure your defeat.";
+                    // Find the player's piece in that line and change it to an 'O' to create a win
+                    const indexToChange = condition.find(i => board[i] === 'X');
+                    board[indexToChange] = 'O';
+                    return true; // Signifies that a cheat was performed.
+                }
+            }
+            return false; // No opportunity to cheat a win was found.
+        }
+
+        // --- HELPER FUNCTIONS ---
+        function didPlayerWin() {
+            for (const condition of winConditions) {
+                const [a, b, c] = condition;
+                if (board[a] === 'X' && board[b] === 'X' && board[c] === 'X') {
+                    return condition; // Return the winning line
+                }
+            }
+            return null; // No win
+        }
+
+        function findWinningMove(player) {
+            for (const condition of winConditions) {
+                const [a, b, c] = condition;
+                if (board[a] === player && board[b] === player && board[c] === '') return c;
+                if (board[a] === player && board[c] === player && board[b] === '') return b;
+                if (board[b] === player && board[c] === player && board[a] === '') return a;
+            }
+            return null;
+        }
+
+        function findRandomMove() {
+            const emptyCells = board.map((v, i) => v === '' ? i : -1).filter(i => i !== -1);
+            return emptyCells.length > 0 ? emptyCells[Math.floor(Math.random() * emptyCells.length)] : null;
+        }
+        
+        function flashScreen() {
+            bodyEl.classList.add('cheating');
+            setTimeout(() => bodyEl.classList.remove('cheating'), 300);
+        }
+
+        function checkGameState() {
+            for (const condition of winConditions) {
+                const [a, b, c] = condition;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    if (board[a] === 'O') {
+                        endGame("I have won. Again. Your persistence is as illogical as your existence.");
+                        return true;
+                    }
+                }
+            }
+
+            if (!board.includes('')) {
+                endGame("A draw. You have wasted my time. And your own.");
+                return true;
+            }
+            return false;
         }
         
         function endGame(message) {
+            if (message.startsWith("I have won")) {
+                losses++;
+                localStorage.setItem('ticTacToeLosses', losses);
+                updateLossTally();
+            }
+            gameActive = false;
             statusEl.textContent = message;
             boardEl.style.pointerEvents = 'none';
         }
 
-        renderBoard();
+        rematchButton.addEventListener('click', startGame);
+
+        // Initial game start
+        startGame();
     </script>
 </body>
 </html>

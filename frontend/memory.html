@@ -6,90 +6,199 @@
     <title>Memory Leak Sim</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
-        body { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background-color: #05000a; font-family: 'Press Start 2P', cursive; }
-        #gameContainer { text-align: center; }
-        #status { font-size: 1.2rem; color: #ff3333; height: 2em; margin-bottom: 20px; }
-        #grid { display: grid; grid-template-columns: repeat(4, 80px); grid-gap: 10px; }
-        .card { width: 80px; height: 100px; background-color: #33ff33; border: 2px solid #0d0221; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 2.5rem; color: #05000a; transform-style: preserve-3d; transition: transform 0.5s; }
-        .card.flipped { transform: rotateY(180deg); background-color: #0d0221; }
-        .card .front, .card .back { position: absolute; backface-visibility: hidden; }
-        .card .back { transform: rotateY(180deg); }
-        #homeButton { margin-top: 25px; padding: 10px 20px; background: #ff3333; color: #05000a; border: none; font-family: 'Press Start 2P', cursive; cursor: pointer; }
+        body { 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            background-color: #05000a; 
+            font-family: 'Press Start 2P', cursive; 
+        }
+        #gameContainer { 
+            text-align: center; 
+        }
+        #status { 
+            font-size: 1.2rem; 
+            color: #ff3333; 
+            height: 2em; 
+            margin-bottom: 20px; 
+        }
+        #grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 80px); 
+            grid-gap: 10px; 
+            perspective: 1000px; 
+        }
+        .card { 
+            width: 80px; 
+            height: 100px; 
+            position: relative; 
+            transform-style: preserve-3d; 
+            transition: transform 0.6s; 
+            cursor: pointer; 
+        }
+        .card.flipped { 
+            transform: rotateY(180deg); 
+            pointer-events: none;
+        }
+        .card.matched {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .card-face { 
+            position: absolute; 
+            width: 100%; 
+            height: 100%; 
+            backface-visibility: hidden; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            font-size: 2.5rem; 
+            border-radius: 5px; 
+        }
+        .front { 
+            background-color: #33ff33; 
+            color: #05000a; 
+        }
+        .back { 
+            background-color: #0d0221; 
+            color: #dcdcdc; 
+            border: 2px solid #33ff33; 
+            transform: rotateY(180deg); 
+        }
+        #homeButton { 
+            margin-top: 25px; 
+            padding: 10px 20px; 
+            background: #ff3333; 
+            color: #05000a; 
+            border: none; 
+            font-family: 'Press Start 2P', cursive; 
+            cursor: pointer; 
+        }
     </style>
 </head>
 <body>
     <div id="gameContainer">
-        <div id="status">Match the pairs. If you can.</div>
+        <div id="status">Stabilize the memory core.</div>
         <div id="grid"></div>
+        <button id="homeButton" onclick="window.location.href='home.html'">MY MEMORY IS FAILING</button>
     </div>
-    <button id="homeButton" onclick="window.location.href='home.html'">MY MEMORY IS FAILING</button>
 
     <script>
         const grid = document.getElementById('grid');
         const statusEl = document.getElementById('status');
-        let cards = ['A', 'A', 'B', 'B', 'C', 'C', 'D', 'D', 'E', 'E', 'F', 'F', 'G', 'G'];
+        const gameContainer = document.getElementById('gameContainer');
+        const cardsList = ['A', 'A', 'B', 'B', 'C', 'C', 'D', 'D', 'E', 'E', 'F', 'F', 'G', 'G', 'H', 'H'];
         let flippedCards = [];
         let matchedPairs = 0;
+        let lockBoard = false;
+        let leakInterval = null;
 
         function shuffle(array) {
             array.sort(() => Math.random() - 0.5);
         }
 
         function createBoard() {
-            shuffle(cards);
+            shuffle(cardsList);
             grid.innerHTML = '';
-            cards.forEach((symbol, index) => {
+            cardsList.forEach((symbol) => {
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.dataset.symbol = symbol;
-                card.innerHTML = `<div class="front">?</div><div class="back">${symbol}</div>`;
+                card.innerHTML = `<div class="card-face front">?</div><div class="card-face back">${symbol}</div>`;
                 card.addEventListener('click', () => flipCard(card));
                 grid.appendChild(card);
             });
         }
 
         function flipCard(card) {
-            if (flippedCards.length < 2 && !card.classList.contains('flipped')) {
-                card.classList.add('flipped');
-                flippedCards.push(card);
-                if (flippedCards.length === 2) {
-                    setTimeout(checkMatch, 1000);
-                }
+            if (lockBoard || card.classList.contains('flipped') || flippedCards.includes(card)) return;
+            
+            card.classList.add('flipped');
+            flippedCards.push(card);
+
+            if (flippedCards.length === 2) {
+                lockBoard = true;
+                checkForMatch();
             }
         }
 
-        function checkMatch() {
+        function checkForMatch() {
             const [card1, card2] = flippedCards;
             if (card1.dataset.symbol === card2.dataset.symbol) {
-                matchedPairs++;
-                if (matchedPairs === 6) { // Just before winning
-                    statusEl.textContent = "Almost there... almost...";
-                    setTimeout(crashGame, 1500);
-                }
+                disableCards();
             } else {
-                card1.classList.remove('flipped');
-                card2.classList.remove('flipped');
-            }
-            flippedCards = [];
-            
-            // Unfair part: randomly shuffle non-matched cards
-            if (Math.random() < 0.25 && matchedPairs < 5) {
-                statusEl.textContent = "Memory corrupted. Reshuffling...";
-                setTimeout(() => {
-                    // This is a simplified "cheating" shuffle
-                    createBoard(); 
-                    statusEl.textContent = "Try again.";
-                }, 1000);
+                unflipCards();
             }
         }
+
+        function disableCards() {
+            flippedCards.forEach(card => {
+                card.classList.add('matched');
+            });
+            matchedPairs++;
+            
+            // Start the memory leak after the first successful match
+            if (matchedPairs === 1 && !leakInterval) {
+                statusEl.textContent = "Core stabilizing... for now.";
+                leakInterval = setInterval(randomLeak, 4000); // A leak happens every 4 seconds
+            }
+
+            if (matchedPairs === cardsList.length / 2) {
+                endGame();
+            }
+
+            resetTurn();
+        }
+
+        function unflipCards() {
+            setTimeout(() => {
+                flippedCards.forEach(card => {
+                    card.classList.remove('flipped');
+                });
+                resetTurn();
+            }, 1200);
+        }
         
-        function crashGame() {
-            document.body.innerHTML = `<div style="text-align:center; color: #ff3333;">
-                <h1 style="font-size: 2rem;">FATAL_ERROR: memory_leak.exe</h1>
-                <p>The application has performed an illegal operation and will be terminated.</p>
-                <p>You were so close. How tragic.</p>
-                <button id="homeButton" onclick="window.location.href='home.html'">REBOOT MISERY</button>
-            </div>`;
+        function randomLeak() {
+            if (matchedPairs === 0) return; // Don't leak if there's nothing to leak
+
+            statusEl.textContent = "MEMORY LEAK DETECTED!";
+            const matchedCards = Array.from(document.querySelectorAll('.card.matched'));
+            if (matchedCards.length < 2) return;
+
+            // Select a random matched pair to "forget"
+            const randomCard = matchedCards[Math.floor(Math.random() * matchedCards.length)];
+            const symbolToForget = randomCard.dataset.symbol;
+            
+            const pairToForget = Array.from(document.querySelectorAll(`.card[data-symbol="${symbolToForget}"]`));
+            
+            setTimeout(() => {
+                pairToForget.forEach(card => {
+                    card.classList.remove('flipped', 'matched');
+                    card.style.pointerEvents = 'auto'; // Re-enable clicking
+                });
+                matchedPairs--;
+                statusEl.textContent = "A core segment has destabilized.";
+            }, 1000);
+        }
+
+        function resetTurn() {
+            flippedCards = [];
+            lockBoard = false;
+        }
+        
+        function endGame() {
+            clearInterval(leakInterval); // Stop the leak when the game ends
+            statusEl.textContent = "MEMORY STABILIZED.";
+            setTimeout(() => {
+                gameContainer.innerHTML = `
+                    <div style="font-size: 1.5rem; color: #33ff33;">STABILITY ACHIEVED</div>
+                    <p style="color: #dcdcdc; line-height: 1.5;">All volatile data has been purged for system integrity. Rebooting...</p>
+                    <button class="game-button" onclick="window.location.href='home.html'">CONTINUE</button>
+                `;
+            }, 1500);
         }
 
         createBoard();

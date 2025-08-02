@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schrödinger's Shell Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0;
+            background-color: #05000a; 
+            font-family: 'Press Start 2P', cursive;
+            color: #dcdcdc;
+        }
+        #gameContainer {
+            width: 90%;
+            max-width: 700px;
+            text-align: center;
+        }
+        #status {
+            font-size: 1.2rem;
+            color: #ff3333;
+            min-height: 3em;
+            margin-bottom: 2rem;
+        }
+        #cupContainer {
+            display: flex;
+            justify-content: space-around;
+            height: 150px;
+            position: relative;
+        }
+        .cup {
+            width: 100px;
+            height: 120px;
+            background-color: #33ff33;
+            border-bottom: 5px solid #1c9a1c;
+            border-radius: 50px 50px 0 0;
+            position: absolute;
+            bottom: 0;
+            cursor: pointer;
+            transition: transform 0.3s, background-color 0.3s;
+        }
+        .cup.lifted {
+            transform: translateY(-50px);
+        }
+        #cup1 { left: 15%; }
+        #cup2 { left: 50%; transform: translateX(-50%); }
+        #cup3 { right: 15%; }
+        
+        .orb {
+            width: 40px;
+            height: 40px;
+            background-color: #05d9e8;
+            border-radius: 50%;
+            box-shadow: 0 0 20px #05d9e8, 0 0 30px #05d9e8;
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: -1;
+        }
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+        .game-button { 
+            padding: 10px 20px; 
+            background: #ff3333; 
+            color: #05000a; 
+            border: none; 
+            font-family: 'Press Start 2P', cursive; 
+            cursor: pointer; 
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="status">Watch closely. Not that it matters.</div>
+        <div id="cupContainer">
+            <div class="cup" id="cup1"></div>
+            <div class="cup" id="cup2"></div>
+            <div class="cup" id="cup3"></div>
+        </div>
+        <div class="button-container">
+            <button id="startButton" class="game-button">START</button>
+            <button id="homeButton" class="game-button" onclick="window.location.href='home.html'">ESCAPE</button>
+        </div>
+    </div>
+
+    <script>
+        const cups = document.querySelectorAll('.cup');
+        const statusEl = document.getElementById('status');
+        const startButton = document.getElementById('startButton');
+        const cupContainer = document.getElementById('cupContainer');
+        let gameActive = false;
+
+        function resetGame() {
+            gameActive = false;
+            startButton.disabled = false;
+            statusEl.textContent = "Your focus is a wasted resource.";
+            cups.forEach(cup => cup.classList.remove('lifted'));
+            const existingOrb = document.querySelector('.orb');
+            if (existingOrb) existingOrb.remove();
+        }
+
+        function startGame() {
+            resetGame();
+            startButton.disabled = true;
+            statusEl.textContent = "Observe...";
+            
+            // Show the orb under a random cup
+            const startCup = cups[Math.floor(Math.random() * 3)];
+            const orb = document.createElement('div');
+            orb.className = 'orb';
+            startCup.appendChild(orb);
+
+            setTimeout(() => {
+                statusEl.textContent = "Your eyes cannot be trusted.";
+                shuffle();
+            }, 1500);
+        }
+
+        function shuffle() {
+            // This is just a visual effect. The orb's position is not tracked.
+            // A real implementation would be more complex, but this serves the "useless" theme.
+            cups.forEach(cup => {
+                cup.style.transition = 'left 0.5s ease-in-out';
+                const newPos = 15 + Math.random() * 70;
+                cup.style.left = `${newPos}%`;
+            });
+
+            setTimeout(() => {
+                gameActive = true;
+                statusEl.textContent = "Choose your failure.";
+                cups.forEach(cup => cup.style.transition = 'transform 0.3s, background-color 0.3s');
+            }, 2000);
+        }
+
+        function chooseCup(chosenCup) {
+            if (!gameActive) return;
+            gameActive = false;
+
+            chosenCup.classList.add('lifted');
+
+            // The AI decides the outcome AFTER the choice is made.
+            const remainingCups = Array.from(cups).filter(c => c !== chosenCup);
+            const orbLocation = remainingCups[Math.floor(Math.random() * remainingCups.length)];
+            
+            // Small chance of a "paradox"
+            if (Math.random() < 0.1) {
+                statusEl.textContent = "PARADOX ERROR: REALITY UNSTABLE. YOU LOSE.";
+                const orb1 = document.createElement('div');
+                orb1.className = 'orb';
+                remainingCups[0].appendChild(orb1);
+                const orb2 = document.createElement('div');
+                orb2.className = 'orb';
+                remainingCups[1].appendChild(orb2);
+            } else {
+                statusEl.textContent = "Predictable. You were never meant to succeed.";
+                const orb = document.createElement('div');
+                orb.className = 'orb';
+                orbLocation.appendChild(orb);
+            }
+
+            setTimeout(resetGame, 3000);
+        }
+
+        startButton.addEventListener('click', startGame);
+        cups.forEach(cup => cup.addEventListener('click', () => chooseCup(cup)));
+
+    </script>
+</body>
+</html>

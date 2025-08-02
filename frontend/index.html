@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PAINSTATION - Your personal hell</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+    <title>PAINSTATION - Your Personal Hell</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #ff2a6d;
@@ -14,17 +14,62 @@
             --text: #d1f7ff;
         }
         
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             padding: 0;
-            background-color: var(--dark);
+            background-color: var(--darker);
             color: var(--text);
             font-family: 'Rajdhani', sans-serif;
-            background-image: 
-                radial-gradient(circle at 25% 25%, rgba(255,42,109,0.15) 0%, transparent 50%),
-                radial-gradient(circle at 75% 75%, rgba(5,217,232,0.15) 0%, transparent 50%);
             min-height: 100vh;
             overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(255,42,109,0.1) 0%, transparent 40%),
+                radial-gradient(circle at 85% 80%, rgba(5,217,232,0.1) 0%, transparent 40%);
+            position: relative;
+        }
+        
+        /* Animated Grid Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                repeating-linear-gradient(0deg, transparent, transparent 49px, rgba(5,217,232,0.1) 50px),
+                repeating-linear-gradient(90deg, transparent, transparent 49px, rgba(255,42,109,0.1) 50px);
+            background-size: 50px 50px;
+            animation: grid-pan 120s linear infinite;
+            z-index: -2;
+        }
+
+        @keyframes grid-pan {
+            from { background-position: 0 0; }
+            to { background-position: -600px -600px; }
+        }
+        
+        /* Scan Line Effect */
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to bottom, rgba(5,217,232,0.3), transparent);
+            box-shadow: 0 0 15px var(--secondary);
+            animation: scan 8s linear infinite;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        @keyframes scan {
+            from { top: -10px; }
+            to { top: 100vh; }
         }
 
         .container {
@@ -32,81 +77,98 @@
             margin: 0 auto;
             padding: 2rem;
             position: relative;
+            z-index: 1;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 3rem;
-            position: relative;
+            margin-bottom: 4rem;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .title {
             font-family: 'Orbitron', sans-serif;
             font-size: 4.5rem;
-            font-weight: 700;
+            font-weight: 900;
             color: var(--primary);
             text-transform: uppercase;
             letter-spacing: 0.5rem;
             margin: 0;
             text-shadow: 0 0 15px var(--primary), 0 0 30px rgba(255,42,109,0.5);
-            animation: glow 2s ease-in-out infinite alternate;
+            animation: titleGlitch 5s ease-in-out infinite alternate;
             position: relative;
             display: inline-block;
         }
 
-        .title::after {
-            content: '';
-            position: absolute;
-            bottom: -15px;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, var(--primary), transparent);
-            box-shadow: 0 0 10px var(--primary);
-        }
-
-        @keyframes glow {
-            from {
-                text-shadow: 0 0 10px var(--primary), 0 0 20px rgba(255,42,109,0.5);
-            }
-            to {
-                text-shadow: 0 0 20px var(--primary), 0 0 40px rgba(255,42,109,0.8), 0 0 60px rgba(255,42,109,0.3);
-            }
+        @keyframes titleGlitch {
+            0% { text-shadow: 0 0 15px var(--primary); transform: skew(0); }
+            49% { text-shadow: 0 0 15px var(--primary); transform: skew(0); }
+            50% { text-shadow: 2px 2px 20px var(--secondary), -2px -2px 20px var(--primary); transform: skew(-1deg); }
+            51% { text-shadow: 0 0 15px var(--primary); transform: skew(0); }
+            100% { text-shadow: 0 0 15px var(--primary); }
         }
 
         .content-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-bottom: 3rem;
+            gap: 2.5rem;
+            margin-bottom: 4rem;
         }
 
         .feature-card {
-            background: linear-gradient(145deg, rgba(13,2,33,0.8) 0%, rgba(1,1,43,0.9) 100%);
+            background: linear-gradient(145deg, rgba(13,2,33,0.7) 0%, rgba(1,1,43,0.8) 100%);
             border: 1px solid rgba(255,42,109,0.3);
             border-radius: 8px;
             padding: 2rem;
             box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
             position: relative;
             overflow: hidden;
+            backdrop-filter: blur(5px);
+            animation: fadeInUp 1s ease-out;
+            animation-fill-mode: both;
+        }
+        
+        .feature-card:nth-child(2) { animation-delay: 0.2s; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
-            border-color: rgba(255,42,109,0.6);
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 20px var(--primary);
+            border-color: var(--primary);
         }
 
-        .feature-card::before {
+        /* Animated corner brackets */
+        .feature-card::before, .feature-card::after {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, transparent 65%, rgba(255,42,109,0.1) 100%);
-            pointer-events: none;
+            width: 20px;
+            height: 20px;
+            border-color: var(--secondary);
+            border-style: solid;
+            transition: all 0.3s ease-in-out;
+        }
+        .feature-card::before { top: 10px; left: 10px; border-width: 2px 0 0 2px; }
+        .feature-card::after { bottom: 10px; right: 10px; border-width: 0 2px 2px 0; }
+        .feature-card:hover::before { transform: translate(-5px, -5px); }
+        .feature-card:hover::after { transform: translate(5px, 5px); }
+
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 1rem;
+            stroke: var(--secondary);
+            fill: none;
+            stroke-width: 1.5;
         }
 
         .feature-title {
@@ -115,28 +177,17 @@
             font-size: 1.8rem;
             margin-top: 0;
             margin-bottom: 1rem;
-            position: relative;
-            display: inline-block;
-        }
-
-        .feature-title::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 50%;
-            height: 2px;
-            background: var(--secondary);
-            box-shadow: 0 0 5px var(--secondary);
         }
 
         .feature-desc {
-            line-height: 1.6;
+            line-height: 1.7;
             font-size: 1.1rem;
+            color: var(--text);
+            opacity: 0.8;
         }
 
         .signup-section {
-            background: linear-gradient(145deg, rgba(13,2,33,0.9) 0%, rgba(5,1,43,0.95) 100%);
+            background: linear-gradient(145deg, rgba(13,2,33,0.8) 0%, rgba(5,1,43,0.9) 100%);
             border: 1px solid rgba(5,217,232,0.3);
             border-radius: 8px;
             padding: 2.5rem;
@@ -144,6 +195,9 @@
             max-width: 600px;
             margin: 0 auto;
             position: relative;
+            backdrop-filter: blur(5px);
+            animation: fadeInUp 1s ease-out 0.4s;
+            animation-fill-mode: both;
         }
 
         .signup-title {
@@ -165,6 +219,8 @@
             margin-bottom: 0.5rem;
             color: var(--primary);
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .input-group input {
@@ -175,14 +231,20 @@
             border-radius: 4px;
             color: var(--text);
             font-family: 'Rajdhani', sans-serif;
-            font-size: 1rem;
+            font-size: 1.1rem;
             transition: all 0.3s;
+        }
+        
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 8px rgba(255,42,109,0.2), inset 0 0 4px rgba(255,42,109,0.1); }
+            50% { box-shadow: 0 0 16px rgba(255,42,109,0.5), inset 0 0 8px rgba(255,42,109,0.3); }
+            100% { box-shadow: 0 0 8px rgba(255,42,109,0.2), inset 0 0 4px rgba(255,42,109,0.1); }
         }
 
         .input-group input:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 10px rgba(255,42,109,0.3);
+            animation: pulse-glow 1.5s infinite;
         }
 
         .signup-btn {
@@ -203,110 +265,135 @@
         }
 
         .signup-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(255,42,109,0.6);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(255,42,109,0.6);
         }
-
-        .beta-banner {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            background: linear-gradient(90deg, var(--secondary) 0%, #00f7ff 100%);
-            color: var(--dark);
-            padding: 12px 25px;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-radius: 30px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(5,217,232,0.4);
+        
+        .signin-link {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 1rem;
+            animation: fadeInUp 1s ease-out 0.6s;
+            animation-fill-mode: both;
+        }
+        .signin-link a {
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 1px dashed rgba(5,217,232,0.5);
             transition: all 0.3s;
-            z-index: 100;
+            padding-bottom: 2px;
         }
-
-        .beta-banner:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(5,217,232,0.6);
+        .signin-link a:hover {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            text-shadow: 0 0 10px var(--primary);
+        }
+        
+        @keyframes painGlitch {
+            0% { filter: hue-rotate(0deg) blur(0); }
+            20% { filter: hue-rotate(30deg) blur(1px); }
+            40% { filter: hue-rotate(-20deg) blur(2px); }
+            60% { filter: hue-rotate(10deg) blur(1px); }
+            100% { filter: hue-rotate(0deg) blur(0); }
         }
 
         @media (max-width: 768px) {
             .content-grid {
                 grid-template-columns: 1fr;
             }
-            
             .title {
-                font-size: 3rem;
+                font-size: 2.5rem;
                 letter-spacing: 0.3rem;
             }
+            .feature-title { font-size: 1.5rem; }
         }
-        // Add to your CSS:
-
-        @keyframes painGlitch {
-    
-          0% { filter: hue-rotate(0deg) blur(0); }
-         20% { filter: hue-rotate(30deg) blur(1px); }
-         40% { filter: hue-rotate(-20deg) blur(2px); }
-         60% { filter: hue-rotate(10deg) blur(1px); }
-         100% { filter: hue-rotate(0deg) blur(0); }
-}
     </style>
 </head>
 <body>
+    <div class="scanline"></div>
     <div class="container">
         <header class="header">
-            <h1 class="title">PAINSTATION</h1>
+            <h1 class="title">Painstation</h1>
         </header>
         
         <div class="content-grid">
             <div class="feature-card">
-                <h2 class="feature-title">NEW TORTURE METHODS</h2>
-                <p class="feature-desc">Experience our latest pain-inducing gameplay mechanics designed to maximize frustration and controller throwing rage. Our advanced algorithms ensure you'll never have a moment of peace.</p>
+                <svg class="feature-icon" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round">
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0L12 2.69z"></path>
+                    <path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path>
+                    <path d="M12 2v2.69"></path><path d="M12 22v-2.69"></path>
+                    <path d="M4.93 4.93l1.88 1.88"></path><path d="M17.19 17.19l1.88 1.88"></path>
+                    <path d="M2 12h2.69"></path><path d="M19.31 12H22"></path>
+                    <path d="M4.93 19.07l1.88-1.88"></path><path d="M17.19 6.81l1.88-1.88"></path>
+                </svg>
+                <h2 class="feature-title">New Torture Methods</h2>
+                <p class="feature-desc">Experience our latest pain-inducing gameplay mechanics designed to maximize frustration. Our advanced algorithms ensure you'll never have a moment of peace.</p>
             </div>
             
             <div class="feature-card">
-                <h2 class="feature-title">UNFAIR ADVANTAGE</h2>
+                <svg class="feature-icon" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <h2 class="feature-title">Unfair Advantage</h2>
                 <p class="feature-desc">Our AI opponents now cheat more efficiently than ever before, with perfect reflexes and psychic prediction abilities. They learn from your mistakes faster than you can make them.</p>
             </div>
         </div>
         
         <div class="signup-section">
-            <h2 class="signup-title">JOIN THE SUFFERING</h2>
-            
-            <div class="input-group">
-                <label for="username">USERNAME</label>
-                <input type="text" id="username" placeholder="Enter your doom...">
-            </div>
-            
-            <div class="input-group">
-                <label for="password">PASSWORD</label>
-                <input type="password" id="password" placeholder="Make it secure... or not">
-            </div>
-            
-            <div class="input-group">
-                <label for="email">EMAIL (WE'LL SPAM YOU)</label>
-                <input type="email" id="email" placeholder="Your@pain.hell">
-            </div>
-            
-            <button class="signup-btn">SIGN UP FOR PAIN</button>
+            <h2 class="signup-title">Join The Suffering</h2>
+            <form id="painForm">
+                <div class="input-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter your doom...">
+                </div>
+                
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Make it secure... or not">
+                </div>
+                
+                <div class="input-group">
+                    <label for="email">Email (We'll spam you)</label>
+                    <input type="email" id="email" placeholder="your@pain.hell">
+                </div>
+                
+                <button type="submit" class="signup-btn">Sign Up For Pain</button>
+            </form>
         </div>
-        <script>
-document.querySelector('.signup-btn').addEventListener('click', function(e) {
-    e.preventDefault();
-    
-    // Add pain effects before redirect
-    document.body.style.animation = 'painGlitch 0.5s';
-    document.querySelector('.container').style.opacity = '0';
-    
-    setTimeout(() => {
-        window.location.href = 'captcha.html';
-    }, 800); // Match duration with animation
-});
 
-
-</script>
-        
-        <div class="beta-banner">JOIN BETA TESTING →</div>
+        <div class="signin-link">
+            <p>Already a member? <a href="#" id="signInLink">Sign In & Suffer</a></p>
+        </div>
     </div>
+
+    <script>
+        function triggerRedirect(url) {
+            document.body.style.animation = 'painGlitch 0.5s ease-in-out';
+            document.querySelector('.container').style.transition = 'opacity 0.5s';
+            document.querySelector('.container').style.opacity = '0';
+            
+            setTimeout(() => {
+                window.location.href = url;
+            }, 600);
+        }
+
+        // Event listener for the Sign Up form
+        document.getElementById('painForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // New users must face the CAPTCHA
+            triggerRedirect('captcha.html'); 
+        });
+
+        // Event listener for the Sign In link
+        document.getElementById('signInLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            // "Existing" users can go straight to the misery
+            triggerRedirect('home.html');
+        });
+    </script>
 </body>
 </html>

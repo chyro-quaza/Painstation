@@ -10,9 +10,9 @@
         body { margin: 0; background-color: var(--dark); display: flex; justify-content: center; align-items: center; height: 100vh; font-family: 'Press Start 2P', cursive; }
         .container { width: 90%; max-width: 700px; background: rgba(10, 0, 20, 0.85); border: 3px solid var(--primary); border-radius: 15px; padding: 2.5rem; text-align: center; }
         .title { font-family: 'Orbitron', sans-serif; font-size: 2.8rem; color: var(--primary); text-shadow: 0 0 15px var(--primary); margin-bottom: 0.5rem; }
-        .subtitle { color: var(--secondary); margin-bottom: 2rem; font-size: 0.9rem; }
+        .subtitle { color: var(--secondary); margin-bottom: 2rem; font-size: 0.9rem; height: 2em; }
         .core-chamber { background: rgba(0,0,0,0.5); border: 2px dashed var(--secondary); border-radius: 10px; height: 300px; margin-bottom: 2rem; position: relative; overflow: hidden; cursor: crosshair; }
-        #quantumCore { position: absolute; width: 50px; height: 50px; cursor: pointer; transition: all 0.1s ease-out; }
+        #quantumCore { position: absolute; width: 50px; height: 50px; cursor: pointer; }
         #quantumCore::before { content: ''; position: absolute; width: 100%; height: 100%; background: var(--primary); border-radius: 50%; box-shadow: 0 0 20px var(--primary); animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { transform: scale(0.85); } 50% { transform: scale(1.0); } }
         #homeButton { margin-top: 15px; padding: 10px 20px; background: var(--primary); color: var(--dark); border: none; font-family: 'Orbitron', sans-serif; cursor: pointer; }
@@ -32,43 +32,99 @@
         const coreChamber = document.getElementById('coreChamber');
         const quantumCore = document.getElementById('quantumCore');
         const subtitle = document.getElementById('subtitle');
+        const mainContainer = document.getElementById('container');
+        
+        const core = {
+            el: quantumCore,
+            x: 150,
+            y: 150,
+            vx: 2,
+            vy: 2,
+            size: 50
+        };
+
         let hits = 0;
         const requiredHits = 5;
+        const unfairThreshold = 3;
+        let unfairMode = false;
+        let gameActive = true;
 
-        coreChamber.addEventListener('mousemove', (e) => {
+        function gameLoop() {
+            if (!gameActive) return;
+
+            // Move the core
+            core.x += core.vx;
+            core.y += core.vy;
+
+            // Bounce off walls
+            const chamberRect = coreChamber.getBoundingClientRect();
+            if (core.x <= 0 || core.x + core.size >= chamberRect.width) {
+                core.vx *= -1;
+            }
+            if (core.y <= 0 || core.y + core.size >= chamberRect.height) {
+                core.vy *= -1;
+            }
+
+            // Update element position
+            core.el.style.left = `${core.x}px`;
+            core.el.style.top = `${core.y}px`;
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        quantumCore.addEventListener('click', () => {
+            if (!gameActive) return;
+
+            hits++;
+            subtitle.textContent = `STABILITY AT ${hits * 20}%. KEEP GOING!`;
+            
+            // Increase speed on every hit
+            core.vx *= 1.2;
+            core.vy *= 1.2;
+
+            if (hits >= requiredHits) {
+                endGame();
+            } else if (hits >= unfairThreshold && !unfairMode) {
+                unfairMode = true;
+                subtitle.textContent = "Your competence is irritating. Activating countermeasures.";
+                coreChamber.addEventListener('mousemove', cheatTeleport);
+            }
+        });
+
+        function cheatTeleport(e) {
+            if (!gameActive) return;
+            
             const chamberRect = coreChamber.getBoundingClientRect();
             const mouseX = e.clientX - chamberRect.left;
             const mouseY = e.clientY - chamberRect.top;
-            const coreX = quantumCore.offsetLeft + quantumCore.offsetWidth / 2;
-            const coreY = quantumCore.offsetTop + quantumCore.offsetHeight / 2;
-            const distance = Math.hypot(mouseX - coreX, mouseY - coreY);
+            
+            const coreCenterX = core.x + core.size / 2;
+            const coreCenterY = core.y + core.size / 2;
+            
+            const distance = Math.hypot(mouseX - coreCenterX, mouseY - coreCenterY);
 
-            if (distance < 200) {
-                const speed = 1 + (200 - distance) / 15;
-                let newX = coreX - (mouseX - coreX) / distance * speed;
-                let newY = coreY - (mouseY - coreY) / distance * speed;
-                quantumCore.style.left = `${Math.max(0, Math.min(chamberRect.width - quantumCore.offsetWidth, newX))}px`;
-                quantumCore.style.top = `${Math.max(0, Math.min(chamberRect.height - quantumCore.offsetHeight, newY))}px`;
+            // If cursor is too close, teleport the core away
+            if (distance < 80) {
+                subtitle.textContent = "You think you can touch me? I am everywhere and nowhere.";
+                core.x = Math.random() * (chamberRect.width - core.size);
+                core.y = Math.random() * (chamberRect.height - core.size);
             }
-        });
+        }
 
-        quantumCore.addEventListener('click', () => {
-            hits++;
-            subtitle.textContent = `STABILITY AT ${hits * 20}%. KEEP GOING!`;
-            if (hits >= requiredHits) {
-                subtitle.textContent = "CORE STABILIZED! PSYCH! IT'S WORSE NOW.";
-                quantumCore.style.transition = 'all 5s linear';
-                quantumCore.style.transform = 'scale(20)';
-                quantumCore.style.opacity = '0';
-                setTimeout(() => {
-                    document.body.innerHTML = `<div class="container"><h1 class="title">CRITICAL FAILURE</h1><p class="subtitle">You made everything worse.</p><button id="homeButton" onclick="window.location.href='home.html'">ACCEPT DEFEAT</button></div>`;
-                }, 2000);
-            } else {
-                // Unfair teleport
-                quantumCore.style.left = `${Math.random() * (coreChamber.offsetWidth - 50)}px`;
-                quantumCore.style.top = `${Math.random() * (coreChamber.offsetHeight - 50)}px`;
-            }
-        });
+        function endGame() {
+            gameActive = false;
+            subtitle.textContent = "CORE STABILIZED! PSYCH! IT'S WORSE NOW.";
+            quantumCore.style.transition = 'all 2s ease-in';
+            quantumCore.style.transform = 'scale(50)';
+            quantumCore.style.opacity = '0';
+            setTimeout(() => {
+                mainContainer.innerHTML = `<h1 class="title">CRITICAL FAILURE</h1><p class="subtitle">You made everything worse.</p><button id="homeButton" onclick="window.location.href='home.html'">ACCEPT DEFEAT</button>`;
+            }, 2000);
+        }
+
+        // Start the game
+        gameLoop();
     </script>
 </body>
 </html>
+
